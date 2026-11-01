@@ -749,7 +749,7 @@ border-bottom:1px solid var(--line);font-size:12.5px}
     <div class="logo">🤖</div>
     <div class="bt">
       <h1>AI 员工控制台</h1>
-      <div class="sub">一人AI公司 · 本地运行 · 所有操作都在这里完成</div>
+      <div class="sub">一人AI公司 · <span id="run_mode">本地运行</span> · 所有操作都在这里完成</div>
     </div>
   </div>
   <div class="gsearch">
@@ -2023,63 +2023,87 @@ window.fetch = function(url, opts){
    访问口令登录框（跨域部署用）
    ------------------------------------------------------------------ */
 function promptStaffPassword(){
+  // 同一时刻只弹一次
   if (window.__staffPwdPromise) return window.__staffPwdPromise;
   window.__staffLoggingIn = true;
+
   window.__staffPwdPromise = new Promise(function(resolve){
-    var old = document.getElementById('staff_pwd_box');
-    if (old) old.remove();
-    var box = document.createElement('div');
-    box.id = 'staff_pwd_box';
-    box.setAttribute('style',
-      'position:fixed;inset:0;z-index:99999;background:rgba(8,12,26,.88);'+
-      'display:flex;align-items:center;justify-content:center;');
-    box.innerHTML =
-      '<div style="background:#161d3a;border:1px solid #2a3358;border-radius:14px;'+
-      'padding:30px 32px;width:min(400px,90vw);box-shadow:0 8px 28px rgba(0,0,0,.5);'+
-      'color:#e8ecf8;font-family:-apple-system,Microsoft YaHei,sans-serif">'+
-      '<div style="font-size:17px;font-weight:600;margin-bottom:6px">🔐 AI 员工系统</div>'+
-      '<div style="font-size:12.5px;color:#6b76a0;margin-bottom:18px">该系统设置了访问口令，请输入后继续。</div>'+
-      '<input id="staff_pwd_in" type="password" placeholder="访问口令" '+
-      'style="width:100%;background:#0b1020;border:1px solid #2a3358;color:#e8ecf8;'+
-      'border-radius:9px;padding:11px 13px;font-size:14px;outline:none;margin-bottom:12px">'+
-      '<div id="staff_pwd_err" style="font-size:12px;color:#f87171;margin-bottom:10px;min-height:16px"></div>'+
-      '<button id="staff_pwd_btn" style="width:100%;background:linear-gradient(135deg,#6366f1,#4f46e5);'+
-      'color:#fff;border:0;border-radius:9px;padding:11px;font-size:14px;font-weight:600;cursor:pointer">'+
-      '进入系统</button></div>';
-    document.body.appendChild(box);
-    var inp = document.getElementById('staff_pwd_in');
-    var err = document.getElementById('staff_pwd_err');
-    var btn = document.getElementById('staff_pwd_btn');
-    inp.focus();
-    function submit(){
-      var v = inp.value.trim();
-      if(!v){ err.textContent='请输入口令'; return; }
-      btn.disabled = true; err.textContent='验证中…';
-      window.__staffLoggingIn = true;
-      _rawFetch(apiUrl('/api/login'), {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        credentials:'include',
-        mode:'cors',
-        body: JSON.stringify({password:v})
-      }).then(function(r){ return r.json(); }).then(function(d){
-        window.__staffLoggingIn = false;
-        if (d && d.ok){
-          box.remove(); window.__staffPwdPromise = null;
-          resolve(true); location.reload();
-        } else {
+    // 先静默探一下：已经登录过就别打扰用户
+    _rawFetch(apiUrl('/api/profile'), {credentials:'include', mode:'cors'})
+      .then(function(r){
+        if (r.status === 200){
+          // 已有有效会话，直接放行
           window.__staffLoggingIn = false;
-          btn.disabled = false; err.textContent = (d && d.error) || '口令错误';
           resolve(false);
+          return 'done';
         }
-      }).catch(function(){
-        window.__staffLoggingIn = false;
-        btn.disabled = false; err.textContent='网络错误，请重试';
-        resolve(false);
+        return 'need-box';
+      })
+      .catch(function(){ return 'need-box'; })
+      .then(function(state){
+        if (state === 'done') return;
+        showBox();
       });
+
+    function showBox(){
+      var old = document.getElementById('staff_pwd_box');
+      if (old) old.remove();
+      var box = document.createElement('div');
+      box.id = 'staff_pwd_box';
+      box.setAttribute('style',
+        'position:fixed;inset:0;z-index:99999;background:rgba(8,12,26,.88);'+
+        'display:flex;align-items:center;justify-content:center;');
+      box.innerHTML =
+        '<div style="background:#161d3a;border:1px solid #2a3358;border-radius:14px;'+
+        'padding:30px 32px;width:min(400px,90vw);box-shadow:0 8px 28px rgba(0,0,0,.5);'+
+        'color:#e8ecf8;font-family:-apple-system,Microsoft YaHei,sans-serif">'+
+        '<div style="font-size:17px;font-weight:600;margin-bottom:6px">🔐 AI 员工系统</div>'+
+        '<div style="font-size:12.5px;color:#6b76a0;margin-bottom:18px">该系统设置了访问口令，请输入后继续。</div>'+
+        '<input id="staff_pwd_in" type="password" placeholder="访问口令" '+
+        'style="width:100%;background:#0b1020;border:1px solid #2a3358;color:#e8ecf8;'+
+        'border-radius:9px;padding:11px 13px;font-size:14px;outline:none;margin-bottom:12px">'+
+        '<div id="staff_pwd_err" style="font-size:12px;color:#f87171;margin-bottom:10px;min-height:16px"></div>'+
+        '<button id="staff_pwd_btn" style="width:100%;background:linear-gradient(135deg,#6366f1,#4f46e5);'+
+        'color:#fff;border:0;border-radius:9px;padding:11px;font-size:14px;font-weight:600;cursor:pointer">'+
+        '进入系统</button></div>';
+      document.body.appendChild(box);
+      var inp = document.getElementById('staff_pwd_in');
+      var err = document.getElementById('staff_pwd_err');
+      var btn = document.getElementById('staff_pwd_btn');
+      inp.focus();
+
+      function submit(){
+        var v = inp.value.trim();
+        if(!v){ err.textContent='请输入口令'; return; }
+        btn.disabled = true; err.textContent='验证中…';
+        window.__staffLoggingIn = true;
+        _rawFetch(apiUrl('/api/login'), {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          credentials:'include',
+          mode:'cors',
+          body: JSON.stringify({password:v})
+        }).then(function(r){ return r.json(); }).then(function(d){
+          window.__staffLoggingIn = false;
+          if (d && d.ok){
+            box.remove();
+            window.__staffPwdPromise = null;
+            resolve(true);
+            location.reload();
+          } else {
+            btn.disabled = false;
+            err.textContent = (d && d.error) || '口令错误';
+            resolve(false);
+          }
+        }).catch(function(){
+          window.__staffLoggingIn = false;
+          btn.disabled = false; err.textContent='网络错误，请重试';
+          resolve(false);
+        });
+      }
+      btn.onclick = submit;
+      inp.onkeydown = function(e){ if(e.key==='Enter') submit(); };
     }
-    btn.onclick = submit;
-    inp.onkeydown = function(e){ if(e.key==='Enter') submit(); };
   });
   return window.__staffPwdPromise;
 };
@@ -2089,6 +2113,12 @@ window.EventSource = function(url, cfg){
   return new _RawES(url, Object.assign({withCredentials:true}, cfg||{}));
 };
 window.EventSource.prototype = _RawES.prototype;
+// 云端模式标记：配了 API_BASE 说明前后端分离，页面在 GitHub Pages，后端在云上
+if (API_BASE){
+  var rm = document.getElementById('run_mode');
+  if (rm) rm.textContent = '云端运行';
+  document.documentElement.setAttribute('data-run-mode','cloud');
+}
 const ROLES = [{"code": "A01", "name": "安全合规员", "layer": "L0 约束层", "automation": "L1", "sample": "我收到一条新的平台公告，请比对差异"}, {"code": "A02", "name": "制度政策员", "layer": "L0 约束层", "automation": "L1", "sample": "这段政策属于禁止、注意还是鼓励方向"}, {"code": "A03", "name": "情报官", "layer": "L1 输入层", "automation": "L1", "sample": "帮我筛一下这批内容哪些值得看"}, {"code": "A04", "name": "素材官", "layer": "L1 输入层", "automation": "L1", "sample": "把这批资料整理成卡片"}, {"code": "A05", "name": "选题策划", "layer": "L1 输入层", "automation": "L2", "sample": "根据今天的素材给我几个选题"}, {"code": "A06", "name": "拆解官", "layer": "L2 生产层", "automation": "L1", "sample": "拆解这篇爆款的结构"}, {"code": "A07", "name": "撰稿员", "layer": "L2 生产层", "automation": "L2", "sample": "按这个骨架写一篇"}, {"code": "A08", "name": "改稿官", "layer": "L2 生产层", "automation": "L2", "sample": "按质检报告改这一稿"}, {"code": "A09", "name": "去AI味官", "layer": "L2 生产层", "automation": "L2", "sample": "把这段改得像人写的"}, {"code": "A10", "name": "质检员", "layer": "L3 检测层", "automation": "L2", "sample": "检查这篇能不能发"}, {"code": "A11", "name": "发布排版", "layer": "L4 分发层", "automation": "L2", "sample": "改成小红书和抖音版本"}, {"code": "A12", "name": "流量官", "layer": "L4 分发层", "automation": "L1", "sample": "分析近30天的数据规律"}, {"code": "A13", "name": "商品官", "layer": "L4 分发层", "automation": "L3", "sample": "帮我上架这个资料包"}, {"code": "A14", "name": "复盘官", "layer": "L5 闭环层", "automation": "L1", "sample": "复盘昨天的表现"}, {"code": "A15", "name": "客服售后", "layer": "L5 闭环层", "automation": "L2", "sample": "买家问XX怎么回"}, {"code": "A16", "name": "GEO优化", "layer": "L4 分发层", "automation": "L2", "sample": "针对这20个提问该写什么内容"}, {"code": "A17", "name": "短视频官", "layer": "L2 生产层", "automation": "L2", "sample": "给这个选题写条抖音脚本"}, {"code": "A18", "name": "转化官", "layer": "L5 闭环层", "automation": "L3", "sample": "客户这样问怎么回"}, {"code": "A19", "name": "品牌实体官", "layer": "L1 输入层", "automation": "L1", "sample": "生成品牌实体卡"}, {"code": "A20", "name": "短剧官", "layer": "L2 生产层", "automation": "L2", "sample": "把这个痛点写成短剧季纲"}, {"code": "A21", "name": "交付官", "layer": "L5 闭环层", "automation": "L2", "sample": "生成交付启动包"}, {"code": "A22", "name": "淘宝视觉官", "layer": "L4 分发层", "automation": "L3", "sample": "帮我做一套主图方案"}, {"code": "A23", "name": "规划师", "layer": "L0 约束层", "automation": "L2", "sample": "巡检一下现在目录里有什么问题"}, {"code": "A24", "name": "数字人视频官", "layer": "其他", "automation": "L2", "sample": "帮我把这段稿子改成适合数字人口播的"}, {"code": "A25", "name": "企业知识库管理员", "layer": "L1 输入层", "automation": "L2", "sample": "我们公司的报价是怎样的？"}, {"code": "A26", "name": "微信情报官", "layer": "L1 输入层", "automation": "L2", "sample": "哪些客户卡住了，卡在哪？"}];
 let FILES = [], CUR = null, WFKEY = null, PLANA = [], PROFILE = null;
 
