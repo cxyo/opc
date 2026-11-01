@@ -57,6 +57,17 @@ WORKSPACE = os.path.dirname(PROJECT)      # 工作区根
 
 CONFIG_PATH = os.path.join(ROOT, "config", "config.json")
 
+# 运行时覆盖配置（不进 Git）
+#
+# 为什么单独一个文件：
+#   config.json 是**跟着仓库走**的（GitHub 上能看到），
+#   里面只能放占位符。真 Key 写进去，一 push 就公开了 ——
+#   所以真 Key 放这个文件，它已被 .gitignore 忽略（*.local.json）。
+#
+#   合并顺序：config.json（默认值） <- config.local.json（运行时覆盖）
+#   环境变量再压过两者（部署时定死的事实，优先级最高）。
+LOCAL_CONFIG_PATH = os.path.join(ROOT, "config", "config.local.json")
+
 DEFAULTS = {
     "provider": "deepseek",
     "api_key": "",
@@ -69,6 +80,10 @@ DEFAULTS = {
     "max_retries": 3,
     "retry_backoff": 5,
     "simulate": False,
+    # 演示模式：给客户看时打开，所有模型调用返回占位内容，**不消耗 Token**。
+    # 与 simulate 的区别：simulate 是「开发时没 Key」的临时状态，
+    # demo_mode 是「部署在公网给客户演示」的安全闸门 —— 优先级更高。
+    "demo_mode": False,
     "daily_token_budget": 200000,
     # 模型分级：扫描/检索用便宜模型，创作用好模型
     "model_tier": {
@@ -130,7 +145,11 @@ def _deep_merge(base, override):
 
 
 def load(path=None):
-    """读取配置。文件不存在时返回默认配置。"""
+    """读取配置。文件不存在时返回默认配置。
+
+    合并顺序（后者覆盖前者）：
+        DEFAULTS  <-  config.json  <-  config.local.json  <-  环境变量
+    """
     path = path or CONFIG_PATH
     data = {}
     if os.path.exists(path):
@@ -139,6 +158,17 @@ def load(path=None):
                 data = json.load(f)
         except json.JSONDecodeError as e:
             raise ConfigError(f"配置文件格式错误：{path}\n{e}")
+
+    # 运行时覆盖层（真 Key 放这里，不进 Git）
+    if path == CONFIG_PATH and os.path.exists(LOCAL_CONFIG_PATH):
+        try:
+            with open(LOCAL_CONFIG_PATH, "r", encoding="utf-8") as f:
+                data = _deep_merge(data, json.load(f))
+        except (json.JSONDecodeError, OSError):
+            # 覆盖文件坏了不能让整个系统起不来 ——
+            # 退回只用 config.json，宁可没 Key 也不能开不了机。
+            pass
+
     cfg = _deep_merge(DEFAULTS, data)
 
     # 路径以「按当前工程位置推导」为准。
@@ -154,6 +184,9 @@ def load(path=None):
         cfg["api_key"] = env_key
     if os.environ.get("STAFF_SIMULATE") == "1":
         cfg["simulate"] = True
+    if os.environ.get("STAFF_DEMO_MODE", "").strip().lower() in (
+            "1", "true", "yes", "on"):
+        cfg["demo_mode"] = True
 
     # 测试实例隔离：把 state / outputs 重定向到独立目录。
     #
@@ -181,6 +214,35 @@ def save(cfg, path=None):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(cfg, f, ensure_ascii=False, indent=2)
+    return path
+
+
+def save_local(patch, path=None):
+    """保存运行时覆盖配置（真 Key 存这里，不进 Git）。
+
+    只写入 patch 里出现的键，不动 config.json 的其它内容。
+    这样「换个 Key」和「改默认模型」互不干扰。
+    """
+    path = path or LOCAL_CONFIG_PATH
+    cur = {}
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                cur = json.load(f)
+        except (json.JSONDecodeError, OSError):
+            cur = {}
+    for k, v in (patch or {}).items():
+        if v is None:
+            cur.pop(k, None)
+        else:
+            cur[k] = v
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(cur, f, ensure_ascii=False, indent=2)
+    try:
+        os.chmod(path, 0o600)     # 真 Key 的文件只给本人读写
+    except OSError:
+        pass                     # Windows 上没有 chmod 权限位，忽略
     return path
 
 
