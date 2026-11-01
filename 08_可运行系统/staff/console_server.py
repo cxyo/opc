@@ -220,6 +220,7 @@ class Handler(BaseHTTPRequestHandler):
     """处理控制台的三个请求：页面 / 下单 / 读台账。"""
 
     cfg = None
+    role = "owner"          # 本次请求的角色：owner（管理员）/ demo（演示账号）
     def log_message(self, fmt, *args):
         pass      # 静音默认的访问日志
 
@@ -313,53 +314,111 @@ class Handler(BaseHTTPRequestHandler):
             return False
         return host in ("127.0.0.1", "::1", "localhost", "0.0.0.0")
 
-    def _authorized(self):
-        """外部访问需要口令。本机访问直接放行。
+    def _presented_secret(self):
+        """取出本次请求携带的口令原文（没有就返回空串）。
 
         口令有三种传递方式（按可靠性排序）：
           1. Authorization: Bearer xxx   —— 跨域首选，不受 SameSite 限制
           2. Cookie: staff_pwd=xxx        —— 同源部署用
           3. 查询参数 ?access=xxx         —— EventSource 用（不能自定义请求头）
         """
-        if self._is_local_request():
-            return True
-        if not ACCESS_PASSWORD:
-            return True
-        # Authorization: Bearer xxx
         auth = (self.headers.get("Authorization", "") or "").strip()
-        if auth.startswith("Bearer ") and auth[7:].strip() == ACCESS_PASSWORD:
-            return True
-        # Cookie: staff_pwd=xxx
+        if auth.startswith("Bearer "):
+            s = auth[7:].strip()
+            if s:
+                return s
         cookie = self.headers.get("Cookie", "") or ""
         for part in cookie.split(";"):
             part = part.strip()
             if part.startswith("staff_pwd="):
-                if part.split("=", 1)[1] == ACCESS_PASSWORD:
-                    return True
-        # 查询参数：?access=xxx（EventSource 用）
+                s = part.split("=", 1)[1]
+                if s:
+                    return s
         try:
             from urllib.parse import parse_qs, urlparse
             q = parse_qs(urlparse(self.path).query).get("access", [""])[0]
-            if q and q == ACCESS_PASSWORD:
-                return True
+            if q:
+                return q
         except Exception:
             pass
-        return False
+        return ""
+
+    def _auth_role(self):
+        """判断本次请求的角色。
+
+        返回：
+          "owner" —— 管理员（管理员口令）：全部功能
+          "demo"  —— 演示账号（演示口令）：只看 + 少量安全操作，绝不烧 token
+          None    —— 没通过鉴权
+
+        为什么分两个角色（2026-11-01 客户演示需求）：
+          网站部署在公网给客户演示，DeepSeek 的 Key 是我自己的。
+          只用一个口令的话，客户拿到口令就能点「一键成稿」，
+          一次全链路 21 个 Agent 就把 token 烧掉了。
+
+          所以拆成两个：
+            管理员口令 → 全功能
+            演示口令   → 只读为主，写操作走白名单
+          白名单里的接口都不调模型（本地检索、建索引、看板演示）。
+
+        判定顺序（重要，2026-11-01 修正）：
+          **先看有没有带口令** → 带了就严格按口令判角色；
+          没带口令才考虑「是不是本机请求」→ 是就放行 owner。
+
+          为什么改这个顺序：
+            原来本机判断在最前面。万一云端的 REMOTE_ADDR 是回环地址
+            （某些反向代理/Passenger 配置下会发生），
+            访问口令就会被完全绕过 —— 谁都能当管理员。
+            而且本机自测时传演示口令也会被判成 owner，测不出真实边界。
+
+          现在传了口令就一定按口令算，传 demo 口令在哪儿都只是 demo。
+        """
+        secret = self._presented_secret()
+        if secret:
+            if ACCESS_PASSWORD and secret == ACCESS_PASSWORD:
+                return "owner"
+            if DEMO_PASSWORD and secret == DEMO_PASSWORD:
+                return "demo"
+            # 带了对的口令但不对 → 明确拒绝，不给「本机放行」的后门
+            if ACCESS_PASSWORD or DEMO_PASSWORD:
+                return None
+            # 压根没设任何口令（纯本地裸奔模式），有口令也不认识
+            return "owner"
+
+        # 没带口令：本机放行，云端要求口令
+        if self._is_local_request():
+            return "owner"
+        if not ACCESS_PASSWORD and not DEMO_PASSWORD:
+            # 没设口令就是本地/内网裸奔模式，给管理员权限
+            return "owner"
+        return None
+
+    def _authorized(self):
+        """外部访问需要口令。本机访问直接放行。"""
+        return self._auth_role() is not None
 
     # ---- 访问口令 ----------------------------------------------------
 
     def _login(self):
-        """校验口令，成功则下发 Cookie。"""
+        """校验口令，成功则下发 Cookie。
+
+        返回体里带 role（owner / demo），前端据此决定：
+          - 显示「演示模式」徽标
+          - 禁用会烧 token 的按钮
+        """
         data = self._body()
         pwd = str(data.get("password") or "").strip()
         if not ACCESS_PASSWORD:
             # 没设口令就不需要登录
-            self._json({"ok": True, "note": "本系统未设置访问口令"})
+            self._json({"ok": True, "role": "owner",
+                        "note": "本系统未设置访问口令"})
             return
-        if pwd != ACCESS_PASSWORD:
+        if pwd != ACCESS_PASSWORD and not (DEMO_PASSWORD and pwd == DEMO_PASSWORD):
             self._json({"ok": False, "error": "口令错误"}, 403)
             return
-        body = json.dumps({"ok": True}, ensure_ascii=False).encode("utf-8")
+        role = "owner" if pwd == ACCESS_PASSWORD else "demo"
+        body = json.dumps({"ok": True, "role": role},
+                          ensure_ascii=False).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
@@ -417,14 +476,30 @@ document.getElementById('p').addEventListener('keydown',function(e){
 
     def do_GET(self):
         # 外部访问先过口令这一关
-        if not self._authorized():
+        role = self._auth_role()
+        if role is None:
             self._login_page()
             return
+        self.role = role
         path = self.path.split("?")[0]
-        if path in ("/", "/index.html"):
+        if path == "/api/session":
+            # 前端一进来就问「我现在是什么角色」，
+            # 好据此显示演示徽标、禁用危险按钮。
+            self._json({"ok": True, "role": self.role,
+                        "demo_mode": bool(self.cfg.get("demo_mode"))})
+        elif path in ("/", "/index.html"):
             self._page()
         elif path == "/api/live/stream":
             self._sse()
+        elif path == "/api/agents/matrix":
+            # GROKBOT 风格多智能体大盘（纯读本地台账，不调模型、不花钱）
+            from staff import grokboard
+            self._json(grokboard.build(self.cfg))
+        elif path == "/api/llm/health":
+            # 连接测试。这会发一个真实请求（max_tokens=10，花费极少），
+            # 所以演示模式下由 llm.health_check 自己短路，不会花钱。
+            ok, detail = llm.health_check(self.cfg)
+            self._json({"ok": ok, "message": detail})
         elif path == "/api/live/recent":
             from staff import live as livemod
             self._json({"ok": True, "events": livemod.BUS.recent(limit=120),
@@ -522,6 +597,10 @@ document.getElementById('p').addEventListener('keydown',function(e){
             self._json({"rows": _publish_log(self.cfg)})
         elif path == "/api/sys/wechat":
             self._json(_wechat_cfg(self.cfg))
+        elif path == "/api/sys/llm":
+            # 注意：_sys_llm_get() 是「返回字典」的纯函数（_sys_llm_set 也复用它），
+            # 所以这里必须用 self._json() 把它发出去，不能直接调用就完事。
+            self._json(self._sys_llm_get())
         else:
             self._send(404, "not found", "text/plain; charset=utf-8")
 
@@ -812,8 +891,26 @@ document.getElementById('p').addEventListener('keydown',function(e){
         if path == "/api/login":
             self._login()
             return
-        if not self._authorized():
+        role = self._auth_role()
+        if role is None:
             self._json({"ok": False, "error": "访问口令不正确或未登录"}, 401)
+            return
+        self.role = role
+        # ---- 演示账号：只放行不花钱、不改数据的操作 ----
+        #
+        # 这里是「客户点了不会烧我 token」的第一道闸（第二道在 llm.py
+        # 的 demo_mode 总闸，最底层）。
+        #
+        # 判定依据是「这个接口会不会调大模型 / 会不会改我的数据」：
+        #   会调模型的（派活、一键成稿、知识库问答、返工…）→ 拒绝
+        #   会改数据的（初始化、恢复默认、导入、删文件…）→ 拒绝
+        #   纯展示的（看板模拟一次成功/失败）→ 放行
+        if role == "demo" and path not in DEMO_ALLOWED_POST:
+            self._json({
+                "ok": False,
+                "error": "演示模式下这个操作不可用（会消耗 API Token 或改动系统数据）",
+                "demo": True,
+            }, 403)
             return
         if path == "/api/order":
             self._order()
@@ -882,6 +979,8 @@ document.getElementById('p').addEventListener('keydown',function(e){
             self._sys_import()
         elif path == "/api/sys/wechat":
             self._sys_wechat()
+        elif path == "/api/sys/llm":
+            self._sys_llm_set()
         # ---- 行业包 / 交付包 ----
         elif path == "/api/industry/switch":
             self._industry_switch()
@@ -1751,6 +1850,117 @@ document.getElementById('p').addEventListener('keydown',function(e){
                                              data.get("appid") or "",
                                              data.get("secret") or ""))
 
+    # ---- 大模型 API 配置（系统管理页）--------------------------------------
+    #
+    # 为什么要单独做一套（2026-11-01）：
+    #   原来 API Key 只能改 config/config.json，改完要重启。
+    #   客户演示场景下要经常切「真跑 / 演示」，
+    #   重启一次太慢，而且服务器上改文件容易手滑。
+    #
+    #   存哪：
+    #     真 Key 存 config/config.local.json（已被 .gitignore 忽略，不进仓库）
+    #     非敏感项（base_url / model / demo_mode）也存这里，方便一键切换
+    #
+    #   安全：
+    #     - 只有 owner 能读能写
+    #     - 回读时**永远不给明文 Key**，只给掩码和「是否已配置」
+    #     - demo 账号读不到任何 Key 信息
+
+    def _sys_llm_get(self):
+        """读取大模型配置（Key 只回掩码，不回明文）。"""
+        from . import config as cfgmod
+        cfg = self.cfg
+        key = cfg.get("api_key") or ""
+        # 判断 Key 是不是占位符（还没真配）
+        placeholder = (not key) or ("your" in key.lower()) or ("here" in key.lower())
+        return {
+            "ok": True,
+            "provider": cfg.get("provider", "deepseek"),
+            "base_url": cfg.get("base_url", ""),
+            "model": cfg.get("model", ""),
+            "reasoner_model": cfg.get("reasoner_model", ""),
+            "daily_token_budget": cfg.get("daily_token_budget", 200000),
+            "judge_tier": cfg.get("judge_tier", "judge"),
+            "has_key": bool(key) and not placeholder,
+            "key_masked": cfgmod.mask_key(key) if key else "",
+            "key_is_placeholder": placeholder,
+            "simulate": bool(cfg.get("simulate")),
+            "demo_mode": bool(cfg.get("demo_mode")),
+            "env_key_set": bool(os.environ.get("DEEPSEEK_API_KEY", "").strip()),
+            "env_demo_mode": llm._env_demo_mode(),
+        }
+
+    def _sys_llm_set(self):
+        """保存大模型配置。Key 留空表示不改（不会误清空已配的 Key）。"""
+        from . import config as cfgmod
+        data = self._body()
+        if "__error__" in data:
+            self._json({"ok": False, "error": data["__error__"]}, 400)
+            return
+
+        patch = {}
+        # ---- Key：留空 = 不修改 ----
+        key = str(data.get("api_key") or "").strip()
+        if key:
+            if key.startswith("****"):
+                # 前端回显的掩码，不是真 Key —— 忽略
+                pass
+            else:
+                patch["api_key"] = key
+        elif data.get("clear_key"):
+            # 清 Key 是不可逆操作（明文一旦丢掉就找不回来了），
+            # 所以要求必须**同时**传 confirm=1，
+            # 避免误调一次接口就把线上能用的 Key 抹掉。
+            if str(data.get("confirm") or "") != "1":
+                self._json({
+                    "ok": False,
+                    "error": "清除 Key 需要显式确认（confirm=1）",
+                    "need_confirm": True,
+                }, 400)
+                return
+            patch["api_key"] = ""
+
+        # ---- 其它项：给了才改 ----
+        for field in ("base_url", "model", "reasoner_model", "judge_tier"):
+            v = data.get(field)
+            if v is not None and str(v).strip() != "":
+                patch[field] = str(v).strip()
+        if data.get("daily_token_budget") is not None:
+            try:
+                patch["daily_token_budget"] = int(data["daily_token_budget"])
+            except (TypeError, ValueError):
+                self._json({"ok": False, "error": "每日预算要填整数"}, 400)
+                return
+        if "demo_mode" in data:
+            patch["demo_mode"] = bool(data.get("demo_mode"))
+        if "simulate" in data:
+            patch["simulate"] = bool(data.get("simulate"))
+
+        if not patch:
+            self._json({"ok": False, "error": "没有要保存的内容"}, 400)
+            return
+
+        try:
+            path = cfgmod.save_local(patch)
+        except Exception as e:
+            self._json({"ok": False, "error": f"保存失败：{e}"}, 500)
+            return
+
+        # 立刻生效：重新加载配置 + 同步进程级演示开关
+        self.cfg = cfgmod.load()
+        Handler.cfg = self.cfg
+        llm.set_demo_mode(bool(self.cfg.get("demo_mode")))
+
+        out = self._sys_llm_get()
+        out["ok"] = True
+        out["saved"] = True
+        out["path"] = path
+        # 提示环境变量的优先级
+        if out.get("env_key_set"):
+            out["note"] = ("环境变量 DEEPSEEK_API_KEY 已设置，它会覆盖这里的配置。"
+                           "要改用页面上的 Key，先把环境变量去掉。")
+        self._json(out)
+
     def _board(self):
         b = boardmod.Board(self.cfg)
         self._json(b.build())
@@ -1932,6 +2142,36 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 # 口令从环境变量读（部署时用环境变量注入，不写进配置文件）。
 
 ACCESS_PASSWORD = os.environ.get("STAFF_ACCESS_PASSWORD", "").strip()
+
+# 演示账号口令：给客户演示时用，只读为主，绝不烧 token。
+#
+# 为什么单独设一个口令（2026-11-01）：
+#   网站部署在公网给客户演示，DeepSeek 的 Key 是我自己的。
+#   客户拿到管理员口令就能点「一键成稿」，一次全链路 21 个 Agent
+#   就把 token 烧掉了 —— 而且客户不知道那是真扣钱。
+#
+#   所以分两个角色：
+#     管理员口令（STAFF_ACCESS_PASSWORD）→ 全功能
+#     演示口令  （STAFF_DEMO_PASSWORD）  → 只看 + 少量安全操作
+#
+# 不设这个环境变量就没有演示账号（只有管理员一种角色）。
+DEMO_PASSWORD = os.environ.get("STAFF_DEMO_PASSWORD", "").strip()
+
+# 演示账号允许的 POST 接口（白名单）。
+#
+# 刻意用白名单而不是黑名单：
+#   黑名单要穷举「哪些接口会花钱」，漏一个就出事；
+#   白名单只放行确定安全的，新增接口默认对演示账号关闭 —— 更安全。
+#
+# 放行的都是「纯展示、不调模型、不改数据」的：
+#   /api/live/simulate  看板模拟一次成功/失败（纯事件，不花钱）
+#   /api/kb/search      企业知识库本地检索（纯 TF-IDF，不调模型）
+#   /api/materials/rewrite 素材改写（纯规则模板，不调模型）
+DEMO_ALLOWED_POST = {
+    "/api/live/simulate",
+    "/api/kb/search",
+    "/api/materials/rewrite",
+}
 
 
 def _lan_ip() -> str:
