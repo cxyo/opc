@@ -266,9 +266,13 @@ def render_console(cfg, board_data=None):
              for k, v in sorted(_byday.items())]
 
     total = board_data["totals"]
+    # API 基址：用于「前端在别处、后端在这里」的前后端分离部署。
+    # 从环境变量 STAFF_API_BASE 读；为空则前端与后端同源（相对路径）。
+    api_base = (os.environ.get("STAFF_API_BASE") or "").strip().rstrip("/")
     repl = {
         "%%OPTS%%": opts,
         "%%ROLE_JSON%%": role_json,
+        "%%API_BASE%%": api_base,
         "%%CARDS%%": "".join(cards),
         "%%T_ACTIVE%%": str(total["active"]),
         "%%T_EMPLOYEES%%": str(total["employees"]),
