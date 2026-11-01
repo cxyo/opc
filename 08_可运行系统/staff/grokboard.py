@@ -201,14 +201,48 @@ def build(cfg):
 
     budget = int(cfg.get("daily_token_budget") or 200000)
 
-    # 1) TASK ENGINE  今日派活量：今天跑够 30 次算满分
-    task_engine = min(100.0, round(today_calls / 30.0 * 100, 1))
+    # ---- 「今天」还是「累计」？----
+    #
+    # 为什么要有这个开关：
+    #   客户演示往往不是每天都在跑系统，「今日派活量」会显示 0，
+    #   大屏上六个指标有两个是 0，看起来像「系统没跑过」，反而劝退客户。
+    #
+    #   所以：今天有数据就显示今天（最真实），
+    #        今天没数据就回落到「最近一次有数据的那天」/累计口径。
+    #   回落时会在返回里带 window 字段，前端如实标注「近 N 天」，
+    #   不骗人 —— 只是不让人第一眼看到一堆 0。
+    if today_recs:
+        window = "today"
+        window_label = "今日"
+        window_calls = today_calls
+        window_tokens = today_tokens
+        window_cost = today_cost
+    else:
+        # 最近一次有数据的日期
+        days = sorted({str(r.get("ts") or "")[:10] for r in records if r.get("ts")})
+        if days:
+            last_day = days[-1]
+            window = last_day
+            window_label = last_day[5:] + "（最近一次）"
+            window_recs = [r for r in records if str(r.get("ts") or "")[:10] == last_day]
+            window_calls = len(window_recs)
+            window_tokens = sum(int(r.get("tokens") or 0) for r in window_recs)
+            window_cost = sum(float(r.get("cost_yuan") or 0.0) for r in window_recs)
+        else:
+            window = "none"
+            window_label = "暂无数据"
+            window_calls = 0
+            window_tokens = 0
+            window_cost = 0.0
+
+    # 1) TASK ENGINE  派活量：跑够 30 次算满分
+    task_engine = min(100.0, round(window_calls / 30.0 * 100, 1))
     # 2) SCAN SCORE   输入层就绪度：A03/A04 产出字数 / 预期
     scan_chars = sum(a["output_chars"] for a in agents if a["code"] in ("A03", "A04"))
     scan_floor = (boardmod.MIN_OUTPUT.get("A03", 200) + boardmod.MIN_OUTPUT.get("A04", 300))
     scan_score = min(100.0, round(scan_chars / scan_floor * 100, 1)) if scan_floor else 0.0
-    # 3) COMPUTE      算力：今日 token 占预算的比例（越低越省，但要够用）
-    compute = min(100.0, round(today_tokens / budget * 100, 1)) if budget else 0.0
+    # 3) COMPUTE      算力：token 占预算的比例
+    compute = min(100.0, round(window_tokens / budget * 100, 1)) if budget else 0.0
     # 4) VERIFY       质检通过率：A10 成功次数 / 总次数
     a10 = [a for a in agents if a["code"] == "A10"]
     verify = 0.0
@@ -245,6 +279,11 @@ def build(cfg):
         for (key, en, cn, hint), val in zip(METRIC_DEFS, [
             task_engine, scan_score, compute, verify, relay, sync])
     ]
+    # 回落时把指标说明改成实际口径（不骗人）
+    if window != "today":
+        for m in metrics:
+            if m["key"] in ("TASK ENGINE", "COMPUTE"):
+                m["hint"] = m["hint"] + "（" + window_label + "）"
 
     # ---- 辐射矩阵（6 个阶段，围绕中枢）----
     radial = []
@@ -291,6 +330,12 @@ def build(cfg):
         "budget_pct": round(today_tokens / budget * 100, 1) if budget else 0.0,
         "agents": len(agents),
         "active": len([a for a in agents if a["today_calls"] > 0]),
+        # 当前指标口径：today = 今日，别的值 = 最近一次有数据的日期
+        "window": window,
+        "window_label": window_label,
+        "window_calls": window_calls,
+        "window_tokens": window_tokens,
+        "window_cost": round(window_cost, 4),
     }
 
     return {
