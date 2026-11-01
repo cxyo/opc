@@ -134,22 +134,125 @@ def _live_status():
     return out
 
 
+def _snippet(text, limit=120):
+    """把长文本截成一小段摘要。
+
+    列表接口只传摘要，全文留给详情接口 —— 弱网下这是能不能用的关键。
+    """
+    s = str(text or "").strip().replace("\r", " ").replace("\n", " ")
+    if len(s) <= limit:
+        return s
+    return s[:limit] + "…"
+
+
+_THUMB_CACHE = {}
+
+
+def _make_thumb(path, width=156, height=220):
+    """生成缩略图并缓存到磁盘。
+
+    页面上封面只显示 78x110（2 倍屏），原图 30-100KB 传起来太慢，
+    缩略图 3-6KB，103 张的差别是「几分钟」和「半分钟」。
+
+    缩略图缓存在 tmp/thumbs 下，源文件改了（mtime 变）会自动重做。
+    """
+    try:
+        from PIL import Image
+    except Exception:
+        # 没装 Pillow 就退回原图 —— 慢一点，但不会整个功能挂掉
+        with open(path, "rb") as f:
+            return f.read()
+
+    try:
+        st = os.stat(path)
+    except OSError:
+        with open(path, "rb") as f:
+            return f.read()
+
+    key = "%s-%x" % (os.path.basename(path), st.st_mtime_ns)
+    hit = _THUMB_CACHE.get(key)
+    if hit is not None:
+        return hit
+
+    cache_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              "..", "data", "thumbs")
+    cache_dir = os.path.abspath(cache_dir)
+    try:
+        os.makedirs(cache_dir, exist_ok=True)
+        cached = os.path.join(cache_dir, key + ".jpg")
+        if os.path.isfile(cached):
+            with open(cached, "rb") as f:
+                data = f.read()
+            _THUMB_CACHE[key] = data
+            return data
+    except Exception:
+        pass
+
+    try:
+        with Image.open(path) as im:
+            im = im.convert("RGB")
+            # cover 裁剪：先按比例缩放到能盖住目标框，再居中裁
+            ratio = max(width / im.width, height / im.height)
+            im = im.resize((max(1, int(im.width * ratio)),
+                            max(1, int(im.height * ratio))), Image.LANCZOS)
+            left = (im.width - width) // 2
+            top = (im.height - height) // 2
+            im = im.crop((left, top, left + width, top + height))
+            buf = io.BytesIO()
+            im.save(buf, "JPEG", quality=72, optimize=True)
+            data = buf.getvalue()
+    except Exception:
+        with open(path, "rb") as f:
+            return f.read()
+
+    try:
+        with open(cached, "wb") as f:
+            f.write(data)
+    except Exception:
+        pass
+    if len(_THUMB_CACHE) > 300:
+        _THUMB_CACHE.clear()
+    _THUMB_CACHE[key] = data
+    return data
+
+
 class Handler(BaseHTTPRequestHandler):
     """处理控制台的三个请求：页面 / 下单 / 读台账。"""
 
     cfg = None
-
     def log_message(self, fmt, *args):
         pass      # 静音默认的访问日志
 
     # ---- 工具 ------------------------------------------------------
 
     def _send(self, code, body, ctype="text/html; charset=utf-8"):
+        """发一个响应。
+
+        大响应（素材列表 200KB+）走 gzip 压缩。
+
+        为什么必须自己压：
+          serv00 前面的 nginx 默认不开 gzip，而服务器到国内用户这条链路
+          实测只有 ~8KB/s —— 214KB 的 JSON 要传 25 秒，前端直接超时。
+          压完之后 JSON 降到 ~30KB，2 秒内到，页面才 usable。
+          （图片是 jpg，本来就压不动，靠缓存头解决。）
+        """
         data = body.encode("utf-8") if isinstance(body, str) else body
+        headers = []
+        # 只压文本类；图片/二进制已经压过，再压只会变大
+        if (len(data) > 4096 and "text/" in ctype
+                or "json" in ctype or "javascript" in ctype):
+            accept = (self.headers.get("Accept-Encoding", "") or "").lower()
+            if "gzip" in accept:
+                import gzip as _gz
+                data = _gz.compress(data, 6)
+                headers.append(("Content-Encoding", "gzip"))
+                headers.append(("Vary", "Accept-Encoding"))
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
+        for k, v in headers:
+            self.send_header(k, v)
         self.end_headers()
         self.wfile.write(data)
 
@@ -513,7 +616,13 @@ document.getElementById('p').addEventListener('keydown',function(e){
             self._json({"ok": False, "error": str(e)})
 
     def _mat_list(self):
-        """素材列表。支持按类型/状态筛选与关键词搜索。"""
+        """素材列表。支持按类型/状态筛选与关键词搜索。
+
+        列表只给摘要，「主要内容」全文留给详情接口。
+        原因：serv00 到国内这条链路只有 ~8KB/s，178 条带全文是 214KB，
+        光列表就要传 25 秒，页面直接卡死。摘要版 gzip 后只有 ~15KB，
+        2 秒内到；用户点开某一条时再单独取全文。
+        """
         from urllib.parse import parse_qs, urlparse
         from staff import materials as M
         q = parse_qs(urlparse(self.path).query)
@@ -524,10 +633,12 @@ document.getElementById('p').addEventListener('keydown',function(e){
             items = M.search(kw, kind, status)
             out = []
             for it in items:
+                # 「值得借鉴」在列表里只用真假两态，正文留到详情
+                worth = it.get("值得借鉴")
                 out.append({
                     "id": it.get("id"),
                     "类型": it.get("类型"),
-                    "标题": it.get("标题"),
+                    "标题": _snippet(it.get("标题"), 60),
                     "作者": it.get("作者"),
                     "日期": it.get("日期"),
                     "链接": it.get("链接"),
@@ -535,11 +646,12 @@ document.getElementById('p').addEventListener('keydown',function(e){
                     "封面": it.get("封面"),
                     "数据": it.get("数据"),
                     "学习状态": it.get("学习状态"),
-                    "值得借鉴": it.get("值得借鉴"),
-                    "主要内容": it.get("主要内容"),
-                    "用在哪": it.get("用在哪"),
-                    "效果": it.get("效果"),
-                    "待用": it.get("待用"),
+                    # 列表里只留一小段摘要，全文在详情接口
+                    "主要内容": _snippet(it.get("主要内容"), 60),
+                    "值得借鉴": (bool(worth) if worth else ""),
+                    "用在哪": _snippet(it.get("用在哪"), 50),
+                    "效果": _snippet(it.get("效果"), 40),
+                    "待用": _snippet(it.get("待用"), 50),
                     "来源渠道": it.get("来源渠道"),
                     "主题标签": it.get("主题标签"),
                 })
@@ -576,11 +688,17 @@ document.getElementById('p').addEventListener('keydown',function(e){
             self._json({"ok": False, "error": str(e)})
 
     def _mat_cover(self):
-        """回传封面图（素材库目录下的图片）。"""
+        """回传封面图（素材库目录下的图片）。
+
+        支持 ?thumb=1 返回 78x110 的缩略图 —— 页面上封面只显示这么大，
+        原图 30-100KB，缩略图只有 3-6KB。这条链路到国内只有 ~8KB/s，
+        103 张原图要传好几分钟，缩略图才 1 分钟以内。
+        """
         from urllib.parse import parse_qs, urlparse
         from staff import materials as M
         q = parse_qs(urlparse(self.path).query)
         name = (q.get("name", [""])[0] or "").strip()
+        thumb = (q.get("thumb", ["0"])[0] or "").strip() in ("1", "true", "yes")
         if not name:
             self._json({"ok": False, "error": "缺少 name"}, 400)
             return
@@ -591,12 +709,28 @@ document.getElementById('p').addEventListener('keydown',function(e){
             self._json({"ok": False, "error": "封面不存在"}, 404)
             return
         try:
-            with open(target, "rb") as f:
-                data = f.read()
+            if thumb:
+                data = _make_thumb(target)
+                ctype = "image/jpeg"
+            else:
+                with open(target, "rb") as f:
+                    data = f.read()
+                ctype = "image/jpeg"
+            # ETag：让浏览器把封面图缓存住。
+            # 这条链路到国内只有 ~8KB/s，104 张封面图不缓存的话要传好几分钟；
+            # 有 ETag 后第二次打开直接走本地缓存。
+            etag = '"%x-%x"' % (os.stat(target).st_mtime_ns, len(data))
+            if (self.headers.get("If-None-Match", "") or "").strip() == etag:
+                self.send_response(304)
+                self.send_header("ETag", etag)
+                self.send_header("Cache-Control", "max-age=86400")
+                self.end_headers()
+                return
             self.send_response(200)
-            self.send_header("Content-Type", "image/jpeg")
+            self.send_header("Content-Type", ctype)
             self.send_header("Content-Length", str(len(data)))
-            self.send_header("Cache-Control", "max-age=86400")
+            self.send_header("ETag", etag)
+            self.send_header("Cache-Control", "public, max-age=86400")
             self.end_headers()
             self.wfile.write(data)
         except Exception as e:
