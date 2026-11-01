@@ -1626,14 +1626,14 @@ border-radius:50%;background:#fff;transition:.25s}
     <div class="gkcore">
       <div class="gkhub" id="gk_hub">
         <div class="en">GRID CORE</div>
-        <div class="lbl">OPC 中枢 · 今日消耗</div>
+        <div class="lbl" id="gk_cost_label">OPC 中枢 · 累计消耗</div>
         <div class="big"><i>¥</i><span id="gk_cost_today">0.0000</span></div>
         <div class="sub" id="gk_cost_sub">累计 ¥0.0000 · 累计 0 次调用</div>
         <div class="bar"><i id="gk_budget_bar" style="width:0%"></i></div>
         <div class="sub" id="gk_budget_sub">今日 Token 预算占用 0%</div>
         <div class="kv">
-          <div><span>今日调用</span><b id="gk_calls_today">0</b></div>
-          <div><span>今日 Token</span><b id="gk_tokens_today">0</b></div>
+          <div><span id="gk_calls_label">今日调用</span><b id="gk_calls_today">0</b></div>
+          <div><span id="gk_tokens_label">今日 Token</span><b id="gk_tokens_today">0</b></div>
           <div><span>在册 Agent</span><b id="gk_agents_n">0</b></div>
           <div><span>今日活跃</span><b id="gk_active_n">0</b></div>
         </div>
@@ -4024,14 +4024,37 @@ function sparkSvg(wave){
 /* ---- 中枢金额卡 ---- */
 function renderGrokHub(d){
   const h = d.hub||{};
-  $('gk_cost_today').textContent = Number(h.cost_today||0).toFixed(4);
-  $('gk_cost_sub').textContent = '累计 ¥'+Number(h.cost_total||0).toFixed(4)
-      +' · 累计 '+(h.calls_total||0)+' 次调用';
+  // 大数字显示**累计**花费，而不是今日花费。
+  // 原因：客户演示时往往是当天第一次打开，今日花费是 0，
+  //   大屏上一个 ¥0.0000 看起来像「系统没跑过」，反而降低说服力。
+  //   累计值才代表「这套系统已经干过多少活、花了多少钱」。
+  const total = Number(h.cost_total||0);
+  const today = Number(h.cost_today||0);
+  $('gk_cost_today').textContent = (today>0 ? today : total).toFixed(4);
+  $('gk_cost_label').textContent = today>0
+    ? 'OPC 中枢 · 今日消耗'
+    : 'OPC 中枢 · 累计消耗';
+  $('gk_cost_sub').textContent = '累计 ¥'+total.toFixed(4)
+      +' · 累计 '+(h.calls_total||0)+' 次调用'
+      +' · 今日 ¥'+today.toFixed(4);
+
+  // 口径窗口：今天没派活时，指标回落到「最近一次有数据的那天」。
+  // 前端如实标注，不骗客户。
+  const win = h.window||'today';
+  const winLabel = h.window_label||'今日';
+  const useWin = (win!=='today');
+  const calls = useWin ? (h.window_calls||0) : (h.calls_today||0);
+  const tokens = useWin ? (h.window_tokens||0) : (h.tokens_today||0);
+
   $('gk_budget_bar').style.width = Math.min(100, Number(h.budget_pct||0))+'%';
-  $('gk_budget_sub').textContent = '今日 Token 预算占用 '+Number(h.budget_pct||0).toFixed(1)
-      +'% （'+Number(h.tokens_today||0).toLocaleString()+' / '+Number(h.budget||0).toLocaleString()+'）';
-  $('gk_calls_today').textContent = h.calls_today||0;
-  $('gk_tokens_today').textContent = Number(h.tokens_today||0).toLocaleString();
+  $('gk_budget_sub').textContent = winLabel+' Token 占用 '
+      + (useWin ? (tokens && h.budget ? (tokens/h.budget*100).toFixed(1) : '0.0') : Number(h.budget_pct||0).toFixed(1))
+      +'% （'+Number(tokens||0).toLocaleString()+' / '+Number(h.budget||0).toLocaleString()+'）'
+      +' · 累计 '+Number(h.tokens_total||0).toLocaleString()+' tok';
+  $('gk_calls_today').textContent = calls;
+  $('gk_calls_label').textContent = useWin ? (winLabel+' 调用') : '今日调用';
+  $('gk_tokens_today').textContent = Number(tokens||0).toLocaleString();
+  $('gk_tokens_label').textContent = useWin ? (winLabel+' Token') : '今日 Token';
   $('gk_agents_n').textContent = h.agents||0;
   $('gk_active_n').textContent = h.active||0;
 
