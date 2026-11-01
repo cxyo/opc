@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-api="%%API_BASE%%">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -749,7 +749,7 @@ border-bottom:1px solid var(--line);font-size:12.5px}
     <div class="logo">🤖</div>
     <div class="bt">
       <h1>AI 员工控制台</h1>
-      <div class="sub">一人AI公司 · 本地运行 · 所有操作都在这里完成</div>
+      <div class="sub">一人AI公司 · <span id="run_mode">本地运行</span> · 所有操作都在这里完成</div>
     </div>
   </div>
   <div class="gsearch">
@@ -1619,6 +1619,172 @@ border-bottom:1px solid var(--line);font-size:12.5px}
 </div>
 
 <script>
+/* ------------------------------------------------------------------
+   API 基址 —— 支持前后端分离部署
+   ------------------------------------------------------------------
+   默认：与页面同源（相对路径 /api/xxx）
+   跨域：页面在 GitHub Pages（cxyo.cn/opc），后端在别处（如 serv00）
+        —— 给 <html> 加一个 data-api 属性即可指定后端地址。
+
+   例：<html data-api="https://micky.serv00.net">
+   ------------------------------------------------------------------ */
+const API_BASE = (document.documentElement.getAttribute('data-api')||'').replace(/\/+$/,'');
+function apiUrl(u){ return API_BASE ? API_BASE + u : u; }
+const _rawFetch = window.fetch.bind(window);
+
+/* 访问口令的存放方式
+   ------------------------------------------------------------------
+   同源部署（本地 / 单机）：用 Cookie，后端自动带上。
+   跨域部署（GitHub Pages + 云端后端）：Cookie 会被 SameSite 拦住
+     （cxyo.cn 和 micky.serv00.net 是不同站点，Lax 策略下跨站请求不带 Cookie），
+     所以改用 Authorization: Bearer 头 —— 后端两种都认。
+
+   口令存在 localStorage，刷新不清除。 */
+const STAFF_PWD_KEY = 'staff_access_pwd';
+function staffToken(){
+  try { return localStorage.getItem(STAFF_PWD_KEY) || ''; } catch(e){ return ''; }
+}
+function setStaffToken(v){ try { localStorage.setItem(STAFF_PWD_KEY, v||''); } catch(e){} }
+
+window.fetch = function(url, opts){
+  opts = opts || {};
+  if (typeof url === 'string' && url.charAt(0)==='/'){
+    url = apiUrl(url);
+    opts.credentials = 'include';
+    opts.mode = 'cors';
+    var tk = staffToken();
+    if (tk){
+      opts.headers = opts.headers || {};
+      // 用 Bearer 传口令，跨站也能过鉴权
+      if (typeof opts.headers.set === 'function') opts.headers.set('Authorization','Bearer '+tk);
+      else opts.headers['Authorization'] = 'Bearer '+tk;
+    }
+  }
+  return _rawFetch(url, opts).then(function(resp){
+    // 后端要求访问口令时返回 401。
+    // 同源部署时后端会直接吐登录页；跨域部署时后端只能吐 401，
+    // 所以这里在前端弹出登录框，输完口令重试。
+    if (resp.status === 401 && !window.__staffLoggingIn && !opts.__probe){
+      var isLogin = /\/api\/login/.test(String(url));
+      if (!isLogin){
+        return promptStaffPassword().then(function(ok){
+          if (ok) return window.fetch(url, opts);
+          return resp;
+        });
+      }
+    }
+    return resp;
+  });
+};
+
+/* ------------------------------------------------------------------
+   访问口令登录框（跨域部署用）
+   ------------------------------------------------------------------ */
+function promptStaffPassword(){
+  // 同一时刻只弹一次
+  if (window.__staffPwdPromise) return window.__staffPwdPromise;
+  window.__staffLoggingIn = true;
+
+  window.__staffPwdPromise = new Promise(function(resolve){
+    // 先静默探一下：已经登录过就别打扰用户
+    _rawFetch(apiUrl('/api/profile'), {credentials:'include', mode:'cors', __probe:true})
+      .then(function(r){
+        if (r.status === 200){
+          // 已有有效会话，直接放行
+          window.__staffLoggingIn = false;
+          window.__staffPwdPromise = null;
+          resolve(false);
+          return 'done';
+        }
+        return 'need-box';
+      })
+      .catch(function(){ return 'need-box'; })
+      .then(function(state){
+        if (state === 'done') return;
+        showBox();
+      });
+
+    function showBox(){
+      var old = document.getElementById('staff_pwd_box');
+      if (old) old.remove();
+      var box = document.createElement('div');
+      box.id = 'staff_pwd_box';
+      box.setAttribute('style',
+        'position:fixed;inset:0;z-index:99999;background:rgba(8,12,26,.88);'+
+        'display:flex;align-items:center;justify-content:center;');
+      box.innerHTML =
+        '<div style="background:#161d3a;border:1px solid #2a3358;border-radius:14px;'+
+        'padding:30px 32px;width:min(400px,90vw);box-shadow:0 8px 28px rgba(0,0,0,.5);'+
+        'color:#e8ecf8;font-family:-apple-system,Microsoft YaHei,sans-serif">'+
+        '<div style="font-size:17px;font-weight:600;margin-bottom:6px">🔐 AI 员工系统</div>'+
+        '<div style="font-size:12.5px;color:#6b76a0;margin-bottom:18px">该系统设置了访问口令，请输入后继续。</div>'+
+        '<input id="staff_pwd_in" type="password" placeholder="访问口令" '+
+        'style="width:100%;background:#0b1020;border:1px solid #2a3358;color:#e8ecf8;'+
+        'border-radius:9px;padding:11px 13px;font-size:14px;outline:none;margin-bottom:12px">'+
+        '<div id="staff_pwd_err" style="font-size:12px;color:#f87171;margin-bottom:10px;min-height:16px"></div>'+
+        '<button id="staff_pwd_btn" style="width:100%;background:linear-gradient(135deg,#6366f1,#4f46e5);'+
+        'color:#fff;border:0;border-radius:9px;padding:11px;font-size:14px;font-weight:600;cursor:pointer">'+
+        '进入系统</button></div>';
+      document.body.appendChild(box);
+      var inp = document.getElementById('staff_pwd_in');
+      var err = document.getElementById('staff_pwd_err');
+      var btn = document.getElementById('staff_pwd_btn');
+      inp.focus();
+
+      function submit(){
+        var v = inp.value.trim();
+        if(!v){ err.textContent='请输入口令'; return; }
+        btn.disabled = true; err.textContent='验证中…';
+        window.__staffLoggingIn = true;
+        _rawFetch(apiUrl('/api/login'), {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          credentials:'include',
+          mode:'cors',
+          body: JSON.stringify({password:v})
+        }).then(function(r){ return r.json(); }).then(function(d){
+          window.__staffLoggingIn = false;
+          if (d && d.ok){
+            // 记住口令：跨域场景 Cookie 会被 SameSite 拦，只能靠 Bearer 头
+            setStaffToken(v);
+            box.remove();
+            window.__staffPwdPromise = null;
+            resolve(true);
+            location.reload();
+          } else {
+            btn.disabled = false;
+            err.textContent = (d && d.error) || '口令错误';
+            resolve(false);
+          }
+        }).catch(function(){
+          window.__staffLoggingIn = false;
+          btn.disabled = false; err.textContent='网络错误，请重试';
+          resolve(false);
+        });
+      }
+      btn.onclick = submit;
+      inp.onkeydown = function(e){ if(e.key==='Enter') submit(); };
+    }
+  });
+  return window.__staffPwdPromise;
+};
+const _RawES = window.EventSource;
+window.EventSource = function(url, cfg){
+  if (typeof url === 'string' && url.charAt(0)==='/'){
+    url = apiUrl(url);
+    // EventSource 不能自定义请求头，口令用查询参数带（后端同样支持 ?access=）
+    var tk = staffToken();
+    if (tk) url += (url.indexOf('?')>=0 ? '&' : '?') + 'access=' + encodeURIComponent(tk);
+  }
+  return new _RawES(url, Object.assign({withCredentials:true}, cfg||{}));
+};
+window.EventSource.prototype = _RawES.prototype;
+// 云端模式标记：配了 API_BASE 说明前后端分离，页面在 GitHub Pages，后端在云上
+if (API_BASE){
+  var rm = document.getElementById('run_mode');
+  if (rm) rm.textContent = '云端运行';
+  document.documentElement.setAttribute('data-run-mode','cloud');
+}
 const ROLES = %%ROLE_JSON%%;
 let FILES = [], CUR = null, WFKEY = null, PLANA = [], PROFILE = null;
 
@@ -1649,8 +1815,8 @@ function goFromHash(){
 }
 window.addEventListener('hashchange',goFromHash);
 function msg(id,text,kind){const e=$(id);e.className='msg '+(kind||'ok');e.innerHTML=esc(text);}
-function post(url,data){return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data||{})}).then(r=>r.json());}
-function get(url){return fetch(url).then(r=>r.json());}
+function post(url,data){return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data||{})}).then(r=>r.json().catch(function(){return {ok:false,error:'HTTP '+r.status};}));}
+function get(url){return fetch(url).then(r=>r.json().catch(function(){return {ok:false,error:'HTTP '+r.status};}));}
 
 /* ================================================================
    技能商店 —— 前端逻辑
