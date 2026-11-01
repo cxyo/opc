@@ -211,10 +211,20 @@ class Handler(BaseHTTPRequestHandler):
         return host in ("127.0.0.1", "::1", "localhost", "0.0.0.0")
 
     def _authorized(self):
-        """外部访问需要口令。本机访问直接放行。"""
+        """外部访问需要口令。本机访问直接放行。
+
+        口令有三种传递方式（按可靠性排序）：
+          1. Authorization: Bearer xxx   —— 跨域首选，不受 SameSite 限制
+          2. Cookie: staff_pwd=xxx        —— 同源部署用
+          3. 查询参数 ?access=xxx         —— EventSource 用（不能自定义请求头）
+        """
         if self._is_local_request():
             return True
         if not ACCESS_PASSWORD:
+            return True
+        # Authorization: Bearer xxx
+        auth = (self.headers.get("Authorization", "") or "").strip()
+        if auth.startswith("Bearer ") and auth[7:].strip() == ACCESS_PASSWORD:
             return True
         # Cookie: staff_pwd=xxx
         cookie = self.headers.get("Cookie", "") or ""
@@ -223,10 +233,14 @@ class Handler(BaseHTTPRequestHandler):
             if part.startswith("staff_pwd="):
                 if part.split("=", 1)[1] == ACCESS_PASSWORD:
                     return True
-        # Authorization: Bearer xxx
-        auth = (self.headers.get("Authorization", "") or "").strip()
-        if auth.startswith("Bearer ") and auth[7:].strip() == ACCESS_PASSWORD:
-            return True
+        # 查询参数：?access=xxx（EventSource 用）
+        try:
+            from urllib.parse import parse_qs, urlparse
+            q = parse_qs(urlparse(self.path).query).get("access", [""])[0]
+            if q and q == ACCESS_PASSWORD:
+                return True
+        except Exception:
+            pass
         return False
 
     # ---- 访问口令 ----------------------------------------------------
