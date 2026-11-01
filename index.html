@@ -1994,13 +1994,34 @@ border-bottom:1px solid var(--line);font-size:12.5px}
 const API_BASE = (document.documentElement.getAttribute('data-api')||'').replace(/\/+$/,'');
 function apiUrl(u){ return API_BASE ? API_BASE + u : u; }
 const _rawFetch = window.fetch.bind(window);
+
+/* 访问口令的存放方式
+   ------------------------------------------------------------------
+   同源部署（本地 / 单机）：用 Cookie，后端自动带上。
+   跨域部署（GitHub Pages + 云端后端）：Cookie 会被 SameSite 拦住
+     （cxyo.cn 和 micky.serv00.net 是不同站点，Lax 策略下跨站请求不带 Cookie），
+     所以改用 Authorization: Bearer 头 —— 后端两种都认。
+
+   口令存在 localStorage，刷新不清除。 */
+const STAFF_PWD_KEY = 'staff_access_pwd';
+function staffToken(){
+  try { return localStorage.getItem(STAFF_PWD_KEY) || ''; } catch(e){ return ''; }
+}
+function setStaffToken(v){ try { localStorage.setItem(STAFF_PWD_KEY, v||''); } catch(e){} }
+
 window.fetch = function(url, opts){
   opts = opts || {};
   if (typeof url === 'string' && url.charAt(0)==='/'){
     url = apiUrl(url);
-    // 跨域时必须显式带凭证，否则 cookie 不会发，后端鉴权过不了
     opts.credentials = 'include';
     opts.mode = 'cors';
+    var tk = staffToken();
+    if (tk){
+      opts.headers = opts.headers || {};
+      // 用 Bearer 传口令，跨站也能过鉴权
+      if (typeof opts.headers.set === 'function') opts.headers.set('Authorization','Bearer '+tk);
+      else opts.headers['Authorization'] = 'Bearer '+tk;
+    }
   }
   return _rawFetch(url, opts).then(function(resp){
     // 后端要求访问口令时返回 401。
@@ -2087,6 +2108,8 @@ function promptStaffPassword(){
         }).then(function(r){ return r.json(); }).then(function(d){
           window.__staffLoggingIn = false;
           if (d && d.ok){
+            // 记住口令：跨域场景 Cookie 会被 SameSite 拦，只能靠 Bearer 头
+            setStaffToken(v);
             box.remove();
             window.__staffPwdPromise = null;
             resolve(true);
@@ -2110,7 +2133,12 @@ function promptStaffPassword(){
 };
 const _RawES = window.EventSource;
 window.EventSource = function(url, cfg){
-  if (typeof url === 'string' && url.charAt(0)==='/') url = apiUrl(url);
+  if (typeof url === 'string' && url.charAt(0)==='/'){
+    url = apiUrl(url);
+    // EventSource 不能自定义请求头，口令用查询参数带（后端同样支持 ?access=）
+    var tk = staffToken();
+    if (tk) url += (url.indexOf('?')>=0 ? '&' : '?') + 'access=' + encodeURIComponent(tk);
+  }
   return new _RawES(url, Object.assign({withCredentials:true}, cfg||{}));
 };
 window.EventSource.prototype = _RawES.prototype;
