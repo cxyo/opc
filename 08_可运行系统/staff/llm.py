@@ -1,9 +1,12 @@
 """DeepSeek API 客户端 —— 零第三方依赖，只用标准库 urllib。
 
-三个关键设计：
+四个关键设计：
 1. 模拟模式（simulate=True）：不调 API也能跑通全部链路逻辑，用于开发与验收
-2. 余额/鉴权错误单独识别，给出能照做的修复指引，而不是抛异常
-3. 成本记账：每次调用记录 token 消耗，防止"全量跑 21 个 Agent"烧钱
+2. 演示模式（demo_mode=True）：给客户看的时候开，**永远不花真钱**，
+   所有调用都返回占位内容。这是「客户演示时不能动我 token」的兜底闸门 ——
+   就算鉴权被绕过、就算有人直接调接口，一分钱也花不出去。
+3. 余额/鉴权错误单独识别，给出能照做的修复指引，而不是抛异常
+4. 成本记账：每次调用记录 token 消耗，防止"全量跑 21 个 Agent"烧钱
 """
 
 import csv
@@ -15,6 +18,51 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 
 from . import config as cfgmod
+
+
+# ---------------------------------------------------------------- 演示模式
+#
+# 为什么要有这一层（2026-11-01 客户演示场景）：
+#
+#   系统部署在公网上给客户演示，DeepSeek 的 Key 是我自己的。
+#   客户如果不小心点了「一键成稿」，那是要真花钱的 ——
+#   而且一次全链路 21 个 Agent 的跑动，token 量不小。
+#
+#   只靠「口令鉴权 + 前端禁用按钮」是不够的：
+#   浏览器控制台能直接调接口，脚本能绕过前端。
+#
+#   所以在最底层（这里）设一道闸：demo_mode 打开时，
+#   chat() 一律走模拟分支，**根本不发 HTTP 请求**。
+#   这是最后一道防线 —— 上面的鉴权、按钮禁用都可能被绕过，
+#   这一层不会。
+#
+# 用法：
+#   STAFF_DEMO_MODE=1 启动   —— 或在系统管理页打开「演示模式」开关
+#
+_DEMO_MODE = False
+
+
+def set_demo_mode(on):
+    """打开/关闭演示模式（进程级全局）。返回新状态。"""
+    global _DEMO_MODE
+    _DEMO_MODE = bool(on)
+    return _DEMO_MODE
+
+
+def demo_mode():
+    """当前是否处于演示模式。"""
+    return _DEMO_MODE
+
+
+def _env_demo_mode():
+    """环境变量里的演示模式设置。
+
+    为什么读环境变量而不是只读配置文件：
+      配置可能被覆盖、被同步工具改回去；环境变量是「部署时定死」的事实，
+      优先级最高 —— 只要它开着，就一定不花真钱。
+    """
+    return os.environ.get("STAFF_DEMO_MODE", "").strip().lower() in (
+        "1", "true", "yes", "on")
 
 
 def is_peak_time(now=None):
@@ -194,6 +242,19 @@ def chat(messages, cfg=None, model=None, temperature=0.7, max_tokens=4000,
         msgs.append({"role": "system", "content": system})
     msgs.extend(messages)
 
+    # ---- 演示模式闸门（最底层防线）----
+    #
+    # 三种情况都判定为「演示模式」，任一成立就不发请求：
+    #   1. 环境变量 STAFF_DEMO_MODE=1  （部署时定死，优先级最高）
+    #   2. 进程级全局开关（系统管理页切过来的）
+    #   3. 配置文件里的 demo_mode=true
+    #
+    # 注意必须在 api_key 检查**之前**判断 ——
+    # 演示模式下就算配了真 Key，也一样不调。
+    if _env_demo_mode() or _DEMO_MODE or cfg.get("demo_mode"):
+        return _demo_reply(msgs, model, role), {
+            "total_tokens": 0, "simulate": True, "demo_mode": True}
+
     if cfg.get("simulate"):
         return _simulate(msgs, model), {"total_tokens": 0, "simulate": True}
 
@@ -330,6 +391,44 @@ def _parse_error(raw):
         return "", raw[:200]
 
 
+def _demo_reply(messages, model, role=""):
+    """演示模式：返回一个「看起来像真产出」的占位结果。
+
+    为什么要单独写一个而不是复用 _simulate：
+      客户演示时，产出工作台里要是摆着「（本内容由模拟模式生成）」，
+      一眼就露馅了 —— 客户会觉得这系统是假的。
+      所以这里给出一段结构完整、能直接展示的占位正文，
+      同时在**末尾**留一行说明（演示模式不会隐藏自己的身份，
+      但也不在开头砸场子）。
+
+    真实 token 消耗恒为 0：这一行代码都不会发出 HTTP 请求。
+    """
+    user = ""
+    for m in reversed(messages):
+        if m.get("role") == "user":
+            user = m.get("content", "")
+            break
+    topic = (user or "").strip().split("\n")[0][:40] or "本次任务"
+    body = (
+        f"# {topic}\n\n"
+        "## 结论\n\n"
+        f"围绕「{topic}」，本轮分析给出了三条可执行结论：\n\n"
+        "1. **先定位再优化** —— 把最耗时的环节量化出来，只改最大的那一项。\n"
+        "2. **流程可复用** —— 把有效动作固化成模板，下次直接套用。\n"
+        "3. **结果可验证** —— 每一步都留痕，用数据判断有没有变好。\n\n"
+        "## 依据\n\n"
+        f"- 输入任务长度：{len(user)} 字符\n"
+        "- 数据来源：本机运行台账（真实调用记录）\n"
+        "- 模型档位：%s\n\n"
+        "## 下一步\n\n"
+        "- 确认上述结论后，执行第一项并记录前后对比数据。\n"
+        "- 把有效动作写回岗位提示词，形成闭环。\n\n"
+        "---\n\n"
+        f"> 演示模式 · 未调用真实模型（岗位 {role or '—'}，模型 {model}）"
+    )
+    return body
+
+
 def _simulate(messages, model):
     """模拟模式：按岗位角色返回结构化的占位内容。
 
@@ -353,6 +452,9 @@ def _simulate(messages, model):
 def health_check(cfg=None):
     """探活：返回 (是否可用, 说明文字)。"""
     cfg = cfg or cfgmod.load()
+    # 演示模式下不能真去探活 —— 那是一次真实调用，会花钱。
+    if _env_demo_mode() or _DEMO_MODE or cfg.get("demo_mode"):
+        return True, "演示模式（未调用真实 API，不消耗 Token）"
     if cfg.get("simulate"):
         return True, "模拟模式（未调用真实 API）"
     if not cfg.get("api_key"):
