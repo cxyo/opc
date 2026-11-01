@@ -2442,10 +2442,15 @@ function matStatusCls(s){
 
 /* 素材封面图 URL。
    <img src> 不能带 Authorization 头，跨域时 Cookie 又会被 SameSite 拦，
-   所以这里用后端同样支持的 ?access= 查询参数传口令（同 EventSource 的做法）。 */
+   所以这里用后端同样支持的 ?access= 查询参数传口令（同 EventSource 的做法）。
+
+   thumb=1 取缩略图：页面只显示 78x110，原图 30-100KB 在这条 8KB/s 的链路上
+   要传好几分钟，缩略图只有 3-6KB。
+
+   loading=lazy 让浏览器只加载视口内的图，滚到哪儿加载到哪儿。 */
 function coverUrl(path){
   var name = String(path||'').split(/[\\\\/]/).pop();
-  var u = apiUrl('/api/materials/cover?name=' + encodeURIComponent(name));
+  var u = apiUrl('/api/materials/cover?name=' + encodeURIComponent(name) + '&thumb=1');
   var tk = staffToken();
   if(tk) u += '&access=' + encodeURIComponent(tk);
   return u;
@@ -2473,7 +2478,7 @@ function renderMats(){
     if(it['来源渠道'])meta.push('<span>'+esc(it['来源渠道'])+'</span>');
 
     const cover=it['封面']
-      ? '<img class="matcover" src="'+coverUrl(it['封面'])+'" alt="">'
+      ? '<img class="matcover" loading="lazy" decoding="async" src="'+coverUrl(it['封面'])+'" alt="">'
       : '<div class="matcover" style="display:grid;place-items:center;font-size:11px;color:var(--tx3);text-align:center;padding:6px">'+
         esc(it['类型']==='article'?'📄':'🔗')+'</div>';
 
