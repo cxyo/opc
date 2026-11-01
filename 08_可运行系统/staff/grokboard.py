@@ -282,8 +282,16 @@ def build(cfg):
     # 回落时把指标说明改成实际口径（不骗人）
     if window != "today":
         for m in metrics:
-            if m["key"] in ("TASK ENGINE", "COMPUTE"):
-                m["hint"] = m["hint"] + "（" + window_label + "）"
+            if m["key"] == "TASK ENGINE":
+                m["hint"] = "派活量（" + window_label + "）"
+            elif m["key"] == "COMPUTE":
+                m["hint"] = "Token 预算占用（" + window_label + "）"
+    else:
+        for m in metrics:
+            if m["key"] == "TASK ENGINE":
+                m["hint"] = "今天派了多少活"
+            elif m["key"] == "COMPUTE":
+                m["hint"] = "今天烧了多少预算"
 
     # ---- 辐射矩阵（6 个阶段，围绕中枢）----
     radial = []
