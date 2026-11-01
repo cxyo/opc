@@ -1,0 +1,60 @@
+# ===== 运行时数据（含用户私有数据，绝不入库）=====
+data/
+08_可运行系统/data/
+归档/
+08_可运行系统/归档/
+
+# ===== 密钥与凭据 =====
+config.json.bak*
+*.bak
+*.key
+*.pem
+.env
+.env.*
+!.env.example
+
+# ===== 微信数据库与解密相关（涉及他人隐私与逆向）=====
+*wechat_key*
+all_keys.json
+db_keymap.json
+wechat_plain/
+db_storage/
+*_解密*
+提取微信密钥*
+wechat_decrypt*
+
+# ===== 构建产物 =====
+build/
+dist/
+*.spec
+exe_build/
+*.exe
+*.zip
+*.7z
+
+# ===== 第三方二进制依赖（应通过 pip 安装）=====
+vendor/
+
+# ===== 缓存 =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ===== 日志与临时文件 =====
+*.log
+*.tmp
+nohup.out
+*.bak_before_*
+
+# ===== 编辑器与系统 =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ===== 本地私有配置 =====
+config.local.json
+*.local.json

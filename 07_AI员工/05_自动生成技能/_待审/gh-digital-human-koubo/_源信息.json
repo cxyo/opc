@@ -1,0 +1,47 @@
+{
+  "full_name": "andyhuo520/digital-human-koubo",
+  "slug": "gh-digital-human-koubo",
+  "desc": "AI digital-human talking-head videos from one photo: Renoise MCP generation + 5 editing styles + 48 creator-grade packaging components. Agent skill for Claude Code / Codex / OpenClaw / WorkBuddy …",
+  "url": "https://github.com/andyhuo520/digital-human-koubo",
+  "license": "MIT",
+  "stars": 1548,
+  "tags": [
+    "github",
+    "auto-generated"
+  ],
+  "group_name": "AI 智能体 / 员工",
+  "at": "2026-10-31 06:36:14",
+  "display": "digital-human-koubo",
+  "sellable_as": "企业知识库问答：把老板的资料变成能问的知识库",
+  "radar_score": 75.8,
+  "forks": 353,
+  "lang": "TypeScript",
+  "created": "2026-10-26",
+  "repo": "andyhuo520/digital-human-koubo",
+  "meta_source": "api",
+  "stars_known": true,
+  "topics": [],
+  "pushed": "2026-10-26",
+  "branch": "main",
+  "files": 891,
+  "bytes": 24450437,
+  "readme": "README.md",
+  "readme_chars": 24490,
+  "commands": [
+    "git clone https://github.com/andyhuo520/digital-human-koubo.git",
+    "cd digital-human-koubo",
+    "mkdir -p ~/.claude/skills && cp -R skills/digital-human-koubo skills/finance-explainer ~/.claude/skills/",
+    "mkdir -p ~/.codex/skills && cp -R skills/digital-human-koubo skills/finance-explainer ~/.codex/skills/",
+    "cd skills && zip -r ../digital-human-skills.zip digital-human-koubo finance-explainer && cd ..",
+    "bash ~/.claude/skills/digital-human-koubo/scripts/doctor.sh",
+    "./align.py",
+    "./assemble.py"
+  ],
+  "sections": {
+    "purpose": 2150,
+    "install": 1465,
+    "usage": 0,
+    "deps": 0,
+    "limits": 0
+  }
+}

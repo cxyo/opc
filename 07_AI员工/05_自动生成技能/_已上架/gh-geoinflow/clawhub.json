@@ -1,0 +1,21 @@
+{
+  "name": "gh-geoinflow",
+  "displayName": "信息采集员 · GEOInflow",
+  "version": "1.0.0",
+  "description": "Self-hosted web and AI crawler analytics for Generative Engine Optimization (GEO). Track visitors, AI search referrals, crawl logs, content coverage, and conversions. Jointly publi",
+  "author": "lobster-skill",
+  "license": "MIT",
+  "pricing": {
+    "model": "one-time",
+    "price": 1990
+  },
+  "tags": [
+    "github",
+    "auto-generated"
+  ],
+  "minOpenClawVersion": "1.2.0",
+  "repository": "https://github.com/yaojingang/GEOInflow",
+  "status": "published",
+  "generatedAt": "2026-10-31 01:47:22",
+  "publishedAt": "2026-10-31 01:48:40"
+}

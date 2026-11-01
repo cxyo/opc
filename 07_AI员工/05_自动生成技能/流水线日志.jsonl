@@ -1,0 +1,62 @@
+{"at": "2026-10-31 00:42:16", "repo": "SonicloudTech/mouse-mcp", "slug": "gh-mouse-mcp", "passed": false, "score": 0}
+{"at": "2026-10-31 00:48:30", "repo": "SonicloudTech/mouse-mcp", "slug": "gh-mouse-mcp", "passed": false, "score": 0}
+{"at": "2026-10-31 01:00:43", "repo": "SonicloudTech/mouse-mcp", "slug": "gh-mouse-mcp", "passed": true, "score": 90}
+{"at": "2026-10-31 01:04:46", "repo": "SonicloudTech/mouse-mcp", "slug": "gh-mouse-mcp", "passed": true, "score": 90}
+{"at": "2026-10-31 01:10:08", "repo": "SonicloudTech/mouse-mcp", "slug": "gh-mouse-mcp", "passed": true, "score": 90}
+{"stage": "process", "repo": "SonicloudTech/mouse-mcp", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mouse-mcp", "problems": [], "ts": "2026-10-31 01:11:33"}
+{"at": "2026-10-31 01:23:16", "repo": "yaojingang/GEOInflow", "slug": "gh-geoinflow", "passed": true, "score": 100}
+{"stage": "process", "repo": "yaojingang/GEOInflow", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow", "problems": [], "ts": "2026-10-31 01:25:33"}
+{"at": "2026-10-31 01:25:33", "repo": "andyhuo520/digital-human-koubo", "slug": "gh-digital-human-koubo", "passed": true, "score": 100}
+{"stage": "process", "repo": "andyhuo520/digital-human-koubo", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-digital-human-koubo", "problems": [], "ts": "2026-10-31 01:26:10"}
+{"at": "2026-10-31 01:26:10", "repo": "floatboatai/OpenMinutes", "slug": "gh-openminutes", "passed": true, "score": 88}
+{"stage": "process", "repo": "floatboatai/OpenMinutes", "ok": true, "score": 88, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-openminutes", "problems": [], "ts": "2026-10-31 01:26:26"}
+{"at": "2026-10-31 01:28:11", "repo": "andyhuo520/digital-human-koubo", "slug": "gh-digital-human-koubo", "passed": true, "score": 90}
+{"stage": "process", "repo": "andyhuo520/digital-human-koubo", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-digital-human-koubo", "problems": [], "ts": "2026-10-31 01:29:47"}
+{"stage": "process", "repo": "anhao/ai-pose-gallery-zh", "ok": true, "score": 0, "passed": false, "pkg": "", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 01:45:30"}
+{"src": "repo_to_skill", "at": "2026-10-31 01:45:30", "repo": "yaojingang/GEOInflow", "slug": "gh-geoinflow", "passed": true, "score": 100}
+{"stage": "process", "repo": "yaojingang/GEOInflow", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 01:45:58"}
+{"src": "repo_to_skill", "at": "2026-10-31 01:45:58", "repo": "MiniMax-AI/mcode-stack", "slug": "gh-mcode-stack", "passed": true, "score": 100}
+{"stage": "process", "repo": "MiniMax-AI/mcode-stack", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mcode-stack", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 01:46:04"}
+{"stage": "process", "repo": "anhao/ai-pose-gallery-zh", "ok": false, "error": "下载失败：下载失败（试了 main, master）：master: HTTP Error 404: Not Found", "src": "auto_pipeline", "ts": "2026-10-31 01:47:22"}
+{"src": "repo_to_skill", "at": "2026-10-31 01:47:22", "repo": "yaojingang/GEOInflow", "slug": "gh-geoinflow", "passed": true, "score": 100}
+{"stage": "process", "repo": "yaojingang/GEOInflow", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 01:48:22"}
+{"src": "repo_to_skill", "at": "2026-10-31 01:48:22", "repo": "MiniMax-AI/mcode-stack", "slug": "gh-mcode-stack", "passed": true, "score": 100}
+{"stage": "process", "repo": "MiniMax-AI/mcode-stack", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mcode-stack", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 01:48:27"}
+{"stage": "publish", "repo": "gh-geoinflow", "ok": true, "score": 100, "license": "MIT", "ts": "2026-10-31 01:48:40"}
+{"stage": "process", "repo": "anhao/ai-pose-gallery-zh", "ok": false, "error": "下载失败：下载失败（试了 main, master）：master: HTTP Error 404: Not Found", "src": "auto_pipeline", "ts": "2026-10-31 01:50:35"}
+{"src": "repo_to_skill", "at": "2026-10-31 01:50:35", "repo": "yaojingang/GEOInflow", "slug": "gh-geoinflow", "passed": true, "score": 90}
+{"stage": "process", "repo": "yaojingang/GEOInflow", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 01:51:07"}
+{"src": "repo_to_skill", "at": "2026-10-31 01:51:07", "repo": "MiniMax-AI/mcode-stack", "slug": "gh-mcode-stack", "passed": true, "score": 90}
+{"stage": "process", "repo": "MiniMax-AI/mcode-stack", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mcode-stack", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 01:51:29"}
+{"src": "repo_to_skill", "at": "2026-10-31 06:35:42", "repo": "yaojingang/GEOInflow", "slug": "gh-geoinflow", "passed": true, "score": 100}
+{"stage": "process", "repo": "yaojingang/GEOInflow", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 06:35:56"}
+{"src": "repo_to_skill", "at": "2026-10-31 06:35:56", "repo": "wangzan101/Mika", "slug": "gh-mika", "passed": true, "score": 100}
+{"stage": "process", "repo": "wangzan101/Mika", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mika", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 06:36:14"}
+{"src": "repo_to_skill", "at": "2026-10-31 06:36:14", "repo": "andyhuo520/digital-human-koubo", "slug": "gh-digital-human-koubo", "passed": true, "score": 100}
+{"stage": "process", "repo": "andyhuo520/digital-human-koubo", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-digital-human-koubo", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 06:36:23"}
+{"stage": "process", "repo": "anhao/ai-pose-gallery-zh", "ok": false, "error": "下载失败：下载失败（试了 main, master）：master: HTTP Error 404: Not Found", "src": "auto_pipeline", "ts": "2026-10-31 06:38:16"}
+{"src": "repo_to_skill", "at": "2026-10-31 06:38:17", "repo": "yaojingang/GEOInflow", "slug": "gh-geoinflow", "passed": true, "score": 90}
+{"stage": "process", "repo": "yaojingang/GEOInflow", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 06:38:59"}
+{"src": "repo_to_skill", "at": "2026-10-31 06:38:59", "repo": "MiniMax-AI/mcode-stack", "slug": "gh-mcode-stack", "passed": true, "score": 90}
+{"stage": "process", "repo": "MiniMax-AI/mcode-stack", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mcode-stack", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 06:39:13"}
+{"stage": "process", "repo": "anhao/ai-pose-gallery-zh", "ok": false, "error": "下载失败：下载失败（试了 main, master）：master: HTTP Error 404: Not Found", "src": "auto_pipeline", "ts": "2026-10-31 06:39:56"}
+{"src": "repo_to_skill", "at": "2026-10-31 06:39:56", "repo": "yaojingang/GEOInflow", "slug": "gh-geoinflow", "passed": true, "score": 90}
+{"stage": "process", "repo": "yaojingang/GEOInflow", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 06:40:23"}
+{"src": "repo_to_skill", "at": "2026-10-31 06:40:23", "repo": "MiniMax-AI/mcode-stack", "slug": "gh-mcode-stack", "passed": true, "score": 90}
+{"stage": "process", "repo": "MiniMax-AI/mcode-stack", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mcode-stack", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 06:40:37"}
+{"stage": "process", "repo": "anhao/ai-pose-gallery-zh", "ok": false, "error": "下载失败：下载失败 —— 仓库太大（main 分支 650 MB），超过 60 MB 上限 —— 这种仓库不适合直接做成 Skill 包，得先瘦身 | 试过的分支：master、dev、develop、release、trunk", "src": "auto_pipeline", "ts": "2026-10-31 06:44:08"}
+{"src": "repo_to_skill", "at": "2026-10-31 06:44:08", "repo": "yaojingang/GEOInflow", "slug": "gh-geoinflow", "passed": true, "score": 90}
+{"stage": "process", "repo": "yaojingang/GEOInflow", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 06:44:46"}
+{"src": "repo_to_skill", "at": "2026-10-31 06:44:46", "repo": "MiniMax-AI/mcode-stack", "slug": "gh-mcode-stack", "passed": true, "score": 90}
+{"stage": "process", "repo": "MiniMax-AI/mcode-stack", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mcode-stack", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 06:45:00"}
+{"stage": "process", "repo": "anhao/ai-pose-gallery-zh", "ok": false, "error": "下载失败：下载失败 —— 仓库太大（main 分支 650 MB），超过 60 MB 上限 —— 这种仓库不适合直接做成 Skill 包，得先瘦身 | 试过的分支：master、dev、develop、release、trunk", "src": "auto_pipeline", "ts": "2026-10-31 06:47:28"}
+{"src": "repo_to_skill", "at": "2026-10-31 06:47:28", "repo": "yaojingang/GEOInflow", "slug": "gh-geoinflow", "passed": true, "score": 90}
+{"stage": "process", "repo": "yaojingang/GEOInflow", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 06:48:08"}
+{"src": "repo_to_skill", "at": "2026-10-31 06:48:08", "repo": "MiniMax-AI/mcode-stack", "slug": "gh-mcode-stack", "passed": true, "score": 90}
+{"stage": "process", "repo": "MiniMax-AI/mcode-stack", "ok": true, "score": 90, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mcode-stack", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 06:48:22"}
+{"src": "repo_to_skill", "at": "2026-10-31 08:40:10", "repo": "yaojingang/GEOInflow", "slug": "gh-geoinflow", "passed": true, "score": 100}
+{"stage": "process", "repo": "yaojingang/GEOInflow", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 08:40:22"}
+{"src": "repo_to_skill", "at": "2026-10-31 08:40:22", "repo": "wangzan101/Mika", "slug": "gh-mika", "passed": true, "score": 100}
+{"stage": "process", "repo": "wangzan101/Mika", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mika", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 08:40:35"}
+{"src": "repo_to_skill", "at": "2026-10-31 08:40:35", "repo": "win4r/video-director", "slug": "gh-video-director", "passed": true, "score": 100}
+{"stage": "process", "repo": "win4r/video-director", "ok": true, "score": 100, "passed": true, "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-video-director", "problems": [], "src": "auto_pipeline", "ts": "2026-10-31 08:40:52"}

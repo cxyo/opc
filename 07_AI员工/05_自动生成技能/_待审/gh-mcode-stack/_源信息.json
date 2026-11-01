@@ -1,0 +1,48 @@
+{
+  "full_name": "MiniMax-AI/mcode-stack",
+  "slug": "gh-mcode-stack",
+  "desc": "<p align=\"center\"> <img src=\"docs/assets/hero.png\" alt=\"MCode Stack: the workflows and skills the MiniMax Code team uses to build MiniMax Code\" width=\"100%\"> </p> <p align=\"center\"",
+  "url": "https://github.com/MiniMax-AI/mcode-stack",
+  "license": "",
+  "stars": 0,
+  "tags": [
+    "github",
+    "auto-generated"
+  ],
+  "group_name": "AI 智能体 / 员工",
+  "at": "2026-10-31 06:48:08",
+  "display": "mcode-stack",
+  "sellable_as": "某个岗位的执行技能（如：自动调研、自动日报）（**待人工细化包装方向**）",
+  "radar_score": 44.5,
+  "forks": 0,
+  "lang": "Python",
+  "created": "2026-10-28",
+  "repo": "MiniMax-AI/mcode-stack",
+  "meta_source": "none",
+  "stars_known": false,
+  "topics": [],
+  "pushed": "",
+  "branch": "main",
+  "files": 93,
+  "bytes": 3051819,
+  "readme": "README.md",
+  "readme_chars": 11801,
+  "commands": [
+    "git clone https://github.com/MiniMax-AI/mcode-stack.git ~/mcode-stack",
+    "mkdir -p ~/.agents/skills",
+    "cp -R ~/mcode-stack/stacks/ronny/skills/long-command-check ~/.agents/skills/",
+    "./install.sh",
+    "./digest.py",
+    "./capture.py",
+    "./fetch_assets.py",
+    "./lint.py"
+  ],
+  "sections": {
+    "purpose": 1200,
+    "install": 2500,
+    "usage": 0,
+    "deps": 0,
+    "limits": 0,
+    "purpose_short": 29
+  }
+}

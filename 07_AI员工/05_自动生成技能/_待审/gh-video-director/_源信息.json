@@ -1,0 +1,45 @@
+{
+  "full_name": "win4r/video-director",
+  "slug": "gh-video-director",
+  "desc": "A Claude skill for directing, building and verifying code-rendered videos (HTML/Canvas → MP4): principles, gated workflow, QA scripts and evals.",
+  "url": "https://github.com/win4r/video-director",
+  "license": "MIT",
+  "stars": 192,
+  "tags": [
+    "github",
+    "auto-generated"
+  ],
+  "group_name": "Skill / 技能包",
+  "at": "2026-10-31 08:40:35",
+  "display": "video-director",
+  "sellable_as": "内容生产岗：视频/配音/数字人生成",
+  "radar_score": 76.7,
+  "forks": 13,
+  "lang": "Python",
+  "created": "2026-10-28",
+  "repo": "win4r/video-director",
+  "meta_source": "api",
+  "stars_known": true,
+  "topics": [],
+  "pushed": "2026-10-30",
+  "branch": "main",
+  "files": 59,
+  "bytes": 34948804,
+  "readme": "README.md",
+  "readme_chars": 5355,
+  "commands": [
+    "git clone https://github.com/win4r/video-director.git",
+    "cp -R video-director/video-director ~/.claude/skills/",
+    "./place-files.sh",
+    "./check_timeline.py",
+    "./qa_video.py"
+  ],
+  "sections": {
+    "purpose": 1200,
+    "install": 570,
+    "usage": 0,
+    "deps": 0,
+    "limits": 0,
+    "purpose_short": 48
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "gh-digital-human-koubo",
+  "displayName": "视频制作员 · digital-human-koubo",
+  "version": "1.0.0",
+  "description": "AI digital-human talking-head videos from one photo: Renoise MCP generation + 5 editing styles + 48 creator-grade packaging components. Agent skill for Claude Code / Codex / OpenCl",
+  "author": "lobster-skill",
+  "license": "MIT",
+  "pricing": {
+    "model": "one-time",
+    "price": 1990
+  },
+  "tags": [
+    "github",
+    "auto-generated"
+  ],
+  "minOpenClawVersion": "1.2.0",
+  "repository": "https://github.com/andyhuo520/digital-human-koubo",
+  "status": "pending-review",
+  "generatedAt": "2026-10-31 06:36:14"
+}

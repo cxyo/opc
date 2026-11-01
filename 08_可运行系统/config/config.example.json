@@ -1,0 +1,66 @@
+{
+  "provider": "deepseek",
+  "api_key": "sk-your-key-here",
+  "base_url": "https://api.deepseek.com/v1",
+  "model": "deepseek-flash",
+  "reasoner_model": "deepseek-v4-pro",
+  "timeout": 180,
+  "max_retries": 3,
+  "retry_backoff": 5,
+  "simulate": false,
+  "daily_token_budget": 200000,
+  "model_tier": {
+    "scan": "deepseek-flash",
+    "create": "deepseek-flash",
+    "judge": "deepseek-v4-pro",
+    "judge_econ": "deepseek-flash",
+    "judge_fast": "deepseek-flash"
+  },
+  "judge_tier": "judge_econ",
+  "thinking_tier": {
+    "scan": false,
+    "create": false,
+    "judge": true,
+    "judge_econ": true,
+    "judge_fast": false
+  },
+  "pricing": {
+    "deepseek-flash": {
+      "input_cache_hit_peak": 0.04,
+      "input_cache_hit_offpeak": 0.02,
+      "input_miss_peak": 2.0,
+      "input_miss_offpeak": 1.0,
+      "output_peak": 8.0,
+      "output_offpeak": 4.0
+    },
+    "deepseek-v4-pro": {
+      "input_cache_hit_peak": 0.3,
+      "input_cache_hit_offpeak": 0.15,
+      "input_miss_peak": 9.0,
+      "input_miss_offpeak": 4.5,
+      "output_peak": 27.0,
+      "output_offpeak": 13.5
+    },
+    "_source": "DeepSeek 官方定价页api-docs.deepseek.com/zh-cn/quick_start/pricing/ ，2026-10-27 核对。单位：元 / 百万 tokens",
+    "peak_hours": "北京时间周一至周五 9:00-12:00、14:00-18:00 为高峰，其余为空闲（空闲价 = 高峰价一半）"
+  },
+  "paths": {
+    "roles": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\01_Bot提示词",
+    "forbidden": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\03_知识库\\wiki\\10_禁区",
+    "seeds": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\02_知识库种子",
+    "kb_wiki": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\03_知识库\\wiki",
+    "raw": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\03_知识库\\raw",
+    "outputs": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\08_可运行系统\\data\\outputs",
+    "logs": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\08_可运行系统\\data\\logs",
+    "state": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\08_可运行系统\\data\\state"
+  },
+  "wechat": {
+    "appid": "",
+    "secret": ""
+  },
+  "_说明": {
+    "api_key": "填你的 DeepSeek API Key（https://platform.deepseek.com/api_keys）",
+    "base_url": "官方地址 https://api.deepseek.com/v1；用本地网关则填 http://127.0.0.1:3001/v1",
+    "模拟模式": "把 simulate 改成 true，不花钱也能跑通全流程（输出是模板文本）"
+  }
+}

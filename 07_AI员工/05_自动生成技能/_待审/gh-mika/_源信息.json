@@ -1,0 +1,58 @@
+{
+  "full_name": "wangzan101/Mika",
+  "slug": "gh-mika",
+  "desc": "Mika — 你手机上的私人 AI 助理，替你操作 App、上网、把事办成。An on-device AI agent for Android that operates apps and the web to get things done for you.",
+  "url": "https://github.com/wangzan101/Mika",
+  "license": "Apache-2.0",
+  "stars": 1298,
+  "tags": [
+    "accessibility",
+    "ai-agent",
+    "android",
+    "automation",
+    "jetpack-compose",
+    "kotlin"
+  ],
+  "group_name": "AI 智能体 / 员工",
+  "at": "2026-10-31 08:40:22",
+  "display": "Mika",
+  "sellable_as": "某个岗位的执行技能（如：自动调研、自动日报）（**待人工细化包装方向**）",
+  "radar_score": 76.9,
+  "forks": 212,
+  "lang": "Kotlin",
+  "created": "2026-10-29",
+  "repo": "wangzan101/Mika",
+  "meta_source": "api",
+  "stars_known": true,
+  "topics": [
+    "accessibility",
+    "ai-agent",
+    "android",
+    "automation",
+    "jetpack-compose",
+    "kotlin",
+    "llm",
+    "mobile-agent"
+  ],
+  "pushed": "2026-10-30",
+  "branch": "main",
+  "files": 1516,
+  "bytes": 50216716,
+  "readme": "README.md",
+  "readme_chars": 13223,
+  "commands": [
+    "./extract_pdf.py",
+    "./gradlew.bat",
+    "./build-native.sh",
+    "./build-runtime.py",
+    "./runtime-sources.py"
+  ],
+  "sections": {
+    "purpose": 831,
+    "install": 1467,
+    "usage": 0,
+    "deps": 0,
+    "limits": 0,
+    "purpose_short": 31
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "name": "gh-mika",
+  "displayName": "任务执行员 · Mika",
+  "version": "1.0.0",
+  "description": "Mika — 你手机上的私人 AI 助理，替你操作 App、上网、把事办成。An on-device AI agent for Android that operates apps and the web to get things done for you.",
+  "author": "lobster-skill",
+  "license": "Apache-2.0",
+  "pricing": {
+    "model": "one-time",
+    "price": 1990
+  },
+  "tags": [
+    "accessibility",
+    "ai-agent",
+    "android",
+    "automation",
+    "jetpack-compose",
+    "kotlin"
+  ],
+  "minOpenClawVersion": "1.2.0",
+  "repository": "https://github.com/wangzan101/Mika",
+  "status": "pending-review",
+  "generatedAt": "2026-10-31 08:40:22"
+}

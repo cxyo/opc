@@ -1,0 +1,186 @@
+{
+  "生成时间": "2026-10-31 08:40:52",
+  "参数": {
+    "days": 7,
+    "top": 3,
+    "min_stars": 20,
+    "min_score": 0,
+    "no_llm": true
+  },
+  "耗时秒": 82.2,
+  "结果": [
+    {
+      "repo": "yaojingang/GEOInflow",
+      "at": "2026-10-31 08:40:10",
+      "meta_source": "api",
+      "stars": 759,
+      "stars_known": true,
+      "forks": 237,
+      "license": "MIT",
+      "url": "https://github.com/yaojingang/GEOInflow",
+      "desc": "Self-hosted web and AI crawler analytics for Generative Engine Optimization (GEO). Track visitors, AI search referrals, crawl logs, content coverage, and conversions. Jointly published by 猎看科技 · 北京日报社智源GEO. MIT licensed.",
+      "topics": [
+        "ai-analytics",
+        "geo",
+        "mit",
+        "postgresql",
+        "self-hosted",
+        "web-analytics"
+      ],
+      "pushed": "2026-10-30",
+      "branch": "main",
+      "files": 3530,
+      "bytes": 38570944,
+      "readme": "README.md",
+      "readme_chars": 15280,
+      "commands": [
+        "sh scripts/liekan-deploy.sh",
+        "docker compose -f docker-compose.liekan.yml exec app node scripts/liekan-seed-demo.mjs",
+        "./install-docker.template.sh",
+        "./install.template.sh",
+        "./liekan-deploy.sh",
+        "./liekan-start.sh",
+        "./start-docker.sh",
+        "./deployment-docker.sh"
+      ],
+      "sections": {
+        "purpose": 1200,
+        "install": 0,
+        "usage": 0,
+        "deps": 0,
+        "limits": 0,
+        "purpose_short": 82
+      },
+      "sellable_as": "企业知识库问答：把老板的资料变成能问的知识库",
+      "radar_score": 78.4,
+      "group_name": "AI 智能体 / 员工",
+      "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow",
+      "zip": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow.zip",
+      "audit": {
+        "包目录": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-geoinflow",
+        "总分": 100,
+        "是否通过": true,
+        "阻断问题": [],
+        "提醒": [],
+        "红线命中_阻断级": [],
+        "红线命中_提示级": [],
+        "原README命中_提示级": [],
+        "审核时间": "2026-10-31 08:40:22"
+      },
+      "passed": true
+    },
+    {
+      "repo": "wangzan101/Mika",
+      "at": "2026-10-31 08:40:22",
+      "meta_source": "api",
+      "stars": 1298,
+      "stars_known": true,
+      "forks": 212,
+      "license": "Apache-2.0",
+      "url": "https://github.com/wangzan101/Mika",
+      "desc": "Mika — 你手机上的私人 AI 助理，替你操作 App、上网、把事办成。An on-device AI agent for Android that operates apps and the web to get things done for you.",
+      "topics": [
+        "accessibility",
+        "ai-agent",
+        "android",
+        "automation",
+        "jetpack-compose",
+        "kotlin",
+        "llm",
+        "mobile-agent"
+      ],
+      "pushed": "2026-10-30",
+      "branch": "main",
+      "files": 1516,
+      "bytes": 50216716,
+      "readme": "README.md",
+      "readme_chars": 13223,
+      "commands": [
+        "./extract_pdf.py",
+        "./gradlew.bat",
+        "./build-native.sh",
+        "./build-runtime.py",
+        "./runtime-sources.py"
+      ],
+      "sections": {
+        "purpose": 831,
+        "install": 1467,
+        "usage": 0,
+        "deps": 0,
+        "limits": 0,
+        "purpose_short": 31
+      },
+      "sellable_as": "某个岗位的执行技能（如：自动调研、自动日报）（**待人工细化包装方向**）",
+      "radar_score": 76.9,
+      "group_name": "AI 智能体 / 员工",
+      "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mika",
+      "zip": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mika.zip",
+      "audit": {
+        "包目录": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-mika",
+        "总分": 100,
+        "是否通过": true,
+        "阻断问题": [],
+        "提醒": [
+          "SKILL.md 含 1 个内容发布域关键词（最）—— 这些条款管的是发到平台的内容，**不阻断上架**，但抖音脚本发布前要再确认一次"
+        ],
+        "红线命中_阻断级": [],
+        "红线命中_提示级": [
+          "淘宝｜命中词「最」"
+        ],
+        "原README命中_提示级": [],
+        "审核时间": "2026-10-31 08:40:35"
+      },
+      "passed": true
+    },
+    {
+      "repo": "win4r/video-director",
+      "at": "2026-10-31 08:40:35",
+      "meta_source": "api",
+      "stars": 192,
+      "stars_known": true,
+      "forks": 13,
+      "license": "MIT",
+      "url": "https://github.com/win4r/video-director",
+      "desc": "A Claude skill for directing, building and verifying code-rendered videos (HTML/Canvas → MP4): principles, gated workflow, QA scripts and evals.",
+      "topics": [],
+      "pushed": "2026-10-30",
+      "branch": "main",
+      "files": 59,
+      "bytes": 34948804,
+      "readme": "README.md",
+      "readme_chars": 5355,
+      "commands": [
+        "git clone https://github.com/win4r/video-director.git",
+        "cp -R video-director/video-director ~/.claude/skills/",
+        "./place-files.sh",
+        "./check_timeline.py",
+        "./qa_video.py"
+      ],
+      "sections": {
+        "purpose": 1200,
+        "install": 570,
+        "usage": 0,
+        "deps": 0,
+        "limits": 0,
+        "purpose_short": 48
+      },
+      "sellable_as": "内容生产岗：视频/配音/数字人生成",
+      "radar_score": 76.7,
+      "group_name": "Skill / 技能包",
+      "pkg": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-video-director",
+      "zip": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-video-director.zip",
+      "audit": {
+        "包目录": "C:\\Users\\micky\\WorkBuddy\\一人AI公司\\07_AI员工\\05_自动生成技能\\_待审\\gh-video-director",
+        "总分": 100,
+        "是否通过": true,
+        "阻断问题": [],
+        "提醒": [],
+        "红线命中_阻断级": [],
+        "红线命中_提示级": [],
+        "原README命中_提示级": [],
+        "审核时间": "2026-10-31 08:40:52"
+      },
+      "passed": true
+    }
+  ]
+}

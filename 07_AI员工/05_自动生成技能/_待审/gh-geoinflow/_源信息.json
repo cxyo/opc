@@ -1,0 +1,59 @@
+{
+  "full_name": "yaojingang/GEOInflow",
+  "slug": "gh-geoinflow",
+  "desc": "Self-hosted web and AI crawler analytics for Generative Engine Optimization (GEO). Track visitors, AI search referrals, crawl logs, content coverage, and conversions. Jointly published by 猎看科技 · 北京日报社智源GEO. MIT licensed.",
+  "url": "https://github.com/yaojingang/GEOInflow",
+  "license": "MIT",
+  "stars": 759,
+  "tags": [
+    "ai-analytics",
+    "geo",
+    "mit",
+    "postgresql",
+    "self-hosted",
+    "web-analytics"
+  ],
+  "group_name": "AI 智能体 / 员工",
+  "at": "2026-10-31 08:40:10",
+  "display": "GEOInflow",
+  "sellable_as": "企业知识库问答：把老板的资料变成能问的知识库",
+  "radar_score": 78.4,
+  "forks": 237,
+  "lang": "TypeScript",
+  "created": "2026-10-26",
+  "repo": "yaojingang/GEOInflow",
+  "meta_source": "api",
+  "stars_known": true,
+  "topics": [
+    "ai-analytics",
+    "geo",
+    "mit",
+    "postgresql",
+    "self-hosted",
+    "web-analytics"
+  ],
+  "pushed": "2026-10-30",
+  "branch": "main",
+  "files": 3530,
+  "bytes": 38570944,
+  "readme": "README.md",
+  "readme_chars": 15280,
+  "commands": [
+    "sh scripts/liekan-deploy.sh",
+    "docker compose -f docker-compose.liekan.yml exec app node scripts/liekan-seed-demo.mjs",
+    "./install-docker.template.sh",
+    "./install.template.sh",
+    "./liekan-deploy.sh",
+    "./liekan-start.sh",
+    "./start-docker.sh",
+    "./deployment-docker.sh"
+  ],
+  "sections": {
+    "purpose": 1200,
+    "install": 0,
+    "usage": 0,
+    "deps": 0,
+    "limits": 0,
+    "purpose_short": 82
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "gh-mcode-stack",
+  "displayName": "技能封装员 · mcode-stack",
+  "version": "1.0.0",
+  "description": "<p align=\"center\"> <img src=\"docs/assets/hero.png\" alt=\"MCode Stack: the workflows and skills the MiniMax Code team uses to build MiniMax Code\" width=\"100%\"> </p> <p align=\"center\"",
+  "author": "lobster-skill",
+  "license": "SEE_PARENT_REPO",
+  "pricing": {
+    "model": "one-time",
+    "price": 1990
+  },
+  "tags": [
+    "github",
+    "auto-generated"
+  ],
+  "minOpenClawVersion": "1.2.0",
+  "repository": "https://github.com/MiniMax-AI/mcode-stack",
+  "status": "pending-review",
+  "generatedAt": "2026-10-31 06:48:08"
+}

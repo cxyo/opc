@@ -1,0 +1,22 @@
+# ===== OPC · 一人公司 AI 员工系统 — Python 依赖 =====
+# 安装：pip install -r requirements.txt
+# 说明：本项目刻意保持轻依赖。除下面几项外全部使用 Python 标准库。
+
+# ---- 图片与视频生成（电商主图 / 详情页 / 短视频）----
+pillow>=10.0.0
+imageio-ffmpeg>=0.5.0
+
+# ---- Token 计量与成本核算 ----
+tiktoken>=0.7.0
+
+# ---- 凭据解密（A27 积分管家读取 WorkBuddy 本地凭据）----
+cryptography>=42.0.0
+
+# ---- 压缩包解析（知识库批量导入）----
+zstandard>=0.22.0
+
+# ---- WebSocket（素材库验证脚本）----
+websocket-client>=1.7.0
+
+# ---- 可选：真实 LLM 调用走标准 OpenAI 兼容接口，无需额外 SDK ----
+# 系统直接用 urllib 调 https://api.deepseek.com/v1（OpenAI 兼容格式）
