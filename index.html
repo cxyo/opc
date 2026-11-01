@@ -2006,7 +2006,7 @@ window.fetch = function(url, opts){
     // 后端要求访问口令时返回 401。
     // 同源部署时后端会直接吐登录页；跨域部署时后端只能吐 401，
     // 所以这里在前端弹出登录框，输完口令重试。
-    if (resp.status === 401 && !window.__staffLoggingIn){
+    if (resp.status === 401 && !window.__staffLoggingIn && !opts.__probe){
       var isLogin = /\/api\/login/.test(String(url));
       if (!isLogin){
         return promptStaffPassword().then(function(ok){
@@ -2029,11 +2029,12 @@ function promptStaffPassword(){
 
   window.__staffPwdPromise = new Promise(function(resolve){
     // 先静默探一下：已经登录过就别打扰用户
-    _rawFetch(apiUrl('/api/profile'), {credentials:'include', mode:'cors'})
+    _rawFetch(apiUrl('/api/profile'), {credentials:'include', mode:'cors', __probe:true})
       .then(function(r){
         if (r.status === 200){
           // 已有有效会话，直接放行
           window.__staffLoggingIn = false;
+          window.__staffPwdPromise = null;
           resolve(false);
           return 'done';
         }
