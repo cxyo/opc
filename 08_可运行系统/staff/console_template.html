@@ -738,6 +738,207 @@ border-bottom:1px solid var(--line);font-size:12.5px}
 .kbhit .bar{flex:1;height:6px;background:var(--panel2);border-radius:3px;overflow:hidden}
 .kbhit .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2))}
 .kbhit .n{color:var(--ac2);min-width:28px;text-align:right;font-weight:700}
+
+/* ============================================================
+   GROKBOT 多智能体监控大盘
+   ------------------------------------------------------------
+   参考视频 AfgDyf9m6N 的 GROKBOT MULTI-AGENT CONTROL 面板：
+   顶部 6 条指标 + 中央金额卡 + 辐射式 Agent 矩阵 + 底部事件流。
+
+   配色沿用深色科幻风，但用青绿（--ac2）做主强调，
+   和整个控制台的紫色调区分开，让这块面板更有"监控屏"的感觉。
+   ============================================================ */
+.gk{position:relative}
+.gk .panel{background:linear-gradient(160deg,rgba(10,20,32,.96) 0%,rgba(8,14,26,.97) 100%);
+border:1px solid rgba(34,211,238,.20);box-shadow:0 0 30px rgba(34,211,238,.07),var(--sh)}
+
+/* ---- 顶部 6 条指标条 ---- */
+.gkmetrics{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+.gkm{padding:11px 12px;border-radius:11px;position:relative;overflow:hidden;
+background:linear-gradient(150deg,rgba(14,28,44,.92),rgba(9,18,30,.94));
+border:1px solid rgba(34,211,238,.24);transition:.22s}
+.gkm:hover{border-color:rgba(34,211,238,.55);transform:translateY(-2px);
+box-shadow:0 6px 22px rgba(34,211,238,.14)}
+.gkm::after{content:"";position:absolute;left:0;top:0;width:100%;height:2px;
+background:linear-gradient(90deg,var(--ac2),transparent)}
+.gkm .en{font-size:9.5px;letter-spacing:1.4px;color:#5eead4;font-weight:700;
+font-family:"Cascadia Mono",Consolas,monospace;opacity:.85}
+.gkm .cn{font-size:11.5px;color:var(--tx3);margin-top:1px}
+.gkm .v{font-size:21px;font-weight:800;color:#e0f2fe;margin-top:4px;
+font-family:"Cascadia Mono",Consolas,monospace;line-height:1.15}
+.gkm .v small{font-size:11px;color:var(--tx3);font-weight:500;margin-left:2px}
+.gkm .hint{font-size:10.5px;color:var(--tx3);margin-top:3px}
+.gkm .wv{display:block;width:100%;height:22px;margin-top:6px;opacity:.9}
+.gkm.good{border-color:rgba(34,197,94,.4)}
+.gkm.good .en{color:#86efac}
+.gkm.warn{border-color:rgba(245,158,11,.42)}
+.gkm.warn .en{color:#fcd34d}
+.gkm.bad{border-color:rgba(239,68,68,.45)}
+.gkm.bad .en{color:#fca5a5}
+
+/* ---- 中枢区：左金额卡 + 右辐射矩阵 ---- */
+.gkcore{display:grid;grid-template-columns:250px 1fr;gap:14px;margin-bottom:14px}
+.gkhub{padding:18px 18px 16px;border-radius:14px;text-align:center;position:relative;
+background:radial-gradient(circle at 50% 22%,rgba(34,211,238,.16),transparent 62%),
+linear-gradient(160deg,rgba(12,26,40,.95),rgba(7,13,24,.97));
+border:1px solid rgba(34,211,238,.32);box-shadow:0 0 40px rgba(34,211,238,.10)}
+.gkhub .en{font-size:10px;letter-spacing:2.6px;color:#5eead4;font-weight:700;
+font-family:"Cascadia Mono",Consolas,monospace}
+.gkhub .lbl{font-size:11.5px;color:var(--tx3);margin-top:3px}
+.gkhub .big{font-size:38px;font-weight:800;color:#67e8f9;letter-spacing:-1px;margin:8px 0 2px;
+font-family:"Cascadia Mono",Consolas,monospace;text-shadow:0 0 22px rgba(34,211,238,.5)}
+.gkhub .big i{font-size:19px;font-style:normal;opacity:.75;margin-right:1px}
+.gkhub .sub{font-size:11px;color:var(--tx3)}
+.gkhub .bar{height:6px;border-radius:3px;background:rgba(255,255,255,.07);
+overflow:hidden;margin:11px 0 4px}
+.gkhub .bar i{display:block;height:100%;border-radius:3px;
+background:linear-gradient(90deg,#22d3ee,#818cf8);transition:width .6s}
+.gkhub .kv{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:11px;text-align:left}
+.gkhub .kv div{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);
+border-radius:8px;padding:7px 9px}
+.gkhub .kv span{display:block;font-size:9.5px;color:var(--tx3);letter-spacing:.4px}
+.gkhub .kv b{font-size:14px;color:#e0f2fe;font-family:"Cascadia Mono",Consolas,monospace}
+
+/* ---- 辐射式 Agent 矩阵 ---- */
+.gkradial{position:relative;padding:14px 16px;border-radius:14px;
+background:linear-gradient(160deg,rgba(10,20,32,.95),rgba(8,14,26,.96));
+border:1px solid rgba(34,211,238,.20);overflow:hidden}
+.gkradial .rtitle{font-size:11px;letter-spacing:1.6px;color:#5eead4;font-weight:700;
+font-family:"Cascadia Mono",Consolas,monospace;margin-bottom:10px;
+display:flex;align-items:center;gap:8px}
+.gkradial .rtitle b{color:var(--tx3);font-weight:500;letter-spacing:0;font-family:inherit}
+/* 辐射连线（用 SVG 画，中心枢纽向 6 个 Agent 连线） */
+.gkradial svg.wires{position:absolute;inset:0;width:100%;height:100%;
+pointer-events:none;z-index:0}
+.gkradial svg.wires line{stroke:rgba(34,211,238,.26);stroke-width:1.2}
+.gkradial svg.wires line.hot{stroke:rgba(34,211,238,.72);stroke-width:2;
+filter:drop-shadow(0 0 4px rgba(34,211,238,.7))}
+.gkhubnode{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+width:92px;height:92px;border-radius:50%;z-index:3;display:flex;flex-direction:column;
+align-items:center;justify-content:center;text-align:center;
+background:radial-gradient(circle,rgba(34,211,238,.28),rgba(10,22,36,.95) 70%);
+border:2px solid rgba(34,211,238,.6);box-shadow:0 0 34px rgba(34,211,238,.35)}
+.gkhubnode .ic{font-size:23px}
+.gkhubnode .t{font-size:10.5px;font-weight:800;color:#a5f3fc;letter-spacing:.6px;margin-top:1px}
+.gkhubnode .s{font-size:9px;color:var(--tx3)}
+.gkagents{position:relative;z-index:2;height:520px}
+/* 6 个 Agent 围绕中心（3 列 × 2 行网格定位，手工排布避免抖动） */
+.gkag{position:absolute;width:150px;padding:9px 11px;border-radius:11px;text-align:center;
+background:linear-gradient(155deg,rgba(16,30,46,.94),rgba(10,19,32,.96));
+border:1px solid rgba(34,211,238,.26);transition:.22s;cursor:default}
+.gkag:hover{border-color:rgba(34,211,238,.62);transform:scale(1.05);
+box-shadow:0 8px 26px rgba(34,211,238,.2)}
+.gkag .ic{font-size:21px;line-height:1}
+.gkag .nm{font-size:11.5px;font-weight:700;color:#e0f2fe;margin-top:3px;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gkag .cd{font-size:9.5px;color:var(--tx3);font-family:"Cascadia Mono",Consolas,monospace}
+.gkag .pc{font-size:16px;font-weight:800;margin-top:3px;
+font-family:"Cascadia Mono",Consolas,monospace}
+.gkag .pb{height:4px;border-radius:2px;background:rgba(255,255,255,.09);
+overflow:hidden;margin-top:5px}
+.gkag .pb i{display:block;height:100%;border-radius:2px;transition:width .6s}
+.gkag .tk{font-size:9.5px;color:var(--tx3);margin-top:4px;white-space:nowrap;
+overflow:hidden;text-overflow:ellipsis}
+.gkag .mv{font-size:10px;color:#67e8f9;font-family:"Cascadia Mono",Consolas,monospace}
+.p100{color:#4ade80}.p75{color:#a3e635}.p50{color:#fbbf24}.p25{color:#fb923c}.p0{color:#f87171}
+.b100{background:linear-gradient(90deg,#22c55e,#4ade80)}
+.b75{background:linear-gradient(90deg,#65a30d,#a3e635)}
+.b50{background:linear-gradient(90deg,#d97706,#fbbf24)}
+.b25{background:linear-gradient(90deg,#ea580c,#fb923c)}
+.b0{background:linear-gradient(90deg,#b91c1c,#f87171)}
+
+/* ---- Agent 明细卡（矩阵下方）---- */
+.gkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:10px}
+.gkcard{padding:11px 13px;border-radius:11px;position:relative;overflow:hidden;
+background:linear-gradient(155deg,rgba(13,25,40,.92),rgba(9,17,29,.94));
+border:1px solid rgba(34,211,238,.16);transition:.2s}
+.gkcard:hover{border-color:rgba(34,211,238,.45);transform:translateY(-2px)}
+.gkcard .hd{display:flex;align-items:center;gap:7px}
+.gkcard .hd .ic{font-size:17px}
+.gkcard .hd .nm{font-size:12.5px;font-weight:700;color:#e0f2fe;flex:1;
+white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gkcard .hd .pc{font-size:14px;font-weight:800;font-family:"Cascadia Mono",Consolas,monospace}
+.gkcard .pb{height:5px;border-radius:3px;background:rgba(255,255,255,.08);
+overflow:hidden;margin:7px 0 6px}
+.gkcard .pb i{display:block;height:100%;border-radius:3px;transition:width .6s}
+.gkcard .rw{font-size:11px;color:var(--tx2);display:flex;justify-content:space-between;
+gap:8px;padding:2px 0}
+.gkcard .rw span{color:var(--tx3);font-size:10.5px}
+.gkcard .rw b{font-weight:600;color:#cbd5e1;font-family:"Cascadia Mono",Consolas,monospace}
+.gkcard .task{font-size:10.5px;color:var(--tx3);margin-top:5px;padding-top:5px;
+border-top:1px dashed rgba(255,255,255,.08);white-space:nowrap;overflow:hidden;
+text-overflow:ellipsis}
+
+/* ---- 金额曲线 ---- */
+.gkcurve{position:relative;height:118px;padding:10px 12px;border-radius:12px;
+background:linear-gradient(160deg,rgba(10,20,32,.94),rgba(8,14,26,.96));
+border:1px solid rgba(34,211,238,.18)}
+.gkcurve .ct{font-size:11px;letter-spacing:1.4px;color:#5eead4;font-weight:700;
+font-family:"Cascadia Mono",Consolas,monospace;margin-bottom:5px}
+.gkcurve svg{width:100%;height:78px;display:block}
+.gkcurve .lg{font-size:10.5px;color:var(--tx3);margin-top:2px}
+
+/* ---- 底部 CONTINUOUS FEED ---- */
+.gkfeed{max-height:270px;overflow-y:auto;padding:11px 13px;border-radius:12px;
+background:linear-gradient(160deg,rgba(8,16,28,.95),rgba(6,12,22,.97));
+border:1px solid rgba(34,211,238,.18);font-family:"Cascadia Mono",Consolas,monospace}
+.gkfeed .ft{font-size:11px;letter-spacing:1.6px;color:#5eead4;font-weight:700;
+margin-bottom:7px;display:flex;align-items:center;gap:8px}
+.gkfeed .ft .dot{width:7px;height:7px;border-radius:50%;background:#22d3ee;
+box-shadow:0 0 9px #22d3ee;animation:mx 1.4s infinite}
+.gkfeed .ln{display:flex;gap:9px;padding:3px 0;font-size:11.5px;line-height:1.55;
+border-bottom:1px solid rgba(255,255,255,.04)}
+.gkfeed .ln .tm{color:#475569;flex-shrink:0;min-width:60px}
+.gkfeed .ln .ty{color:#38bdf8;flex-shrink:0;min-width:52px}
+.gkfeed .ln .ms{color:#94a3b8;flex:1;word-break:break-word}
+.gkfeed .ln.ok .ty{color:#4ade80}
+.gkfeed .ln.err .ty{color:#f87171}
+.gkfeed .ln.warn .ty{color:#fbbf24}
+
+/* ---- 演示徽标 ---- */
+.rolebadge{display:none;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;
+font-size:12px;font-weight:700;letter-spacing:.5px;white-space:nowrap}
+.rolebadge.show{display:inline-flex}
+.rolebadge.demo{background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.5);
+color:#fcd34d;box-shadow:0 0 16px rgba(245,158,11,.2)}
+.rolebadge.owner{background:rgba(34,197,94,.13);border:1px solid rgba(34,197,94,.45);color:#86efac}
+.rolebadge .bl{width:8px;height:8px;border-radius:50%;background:currentColor;
+box-shadow:0 0 8px currentColor;animation:mx 1.6s infinite}
+/* 演示模式下把会烧钱的按钮变灰 */
+body.demo-lock .btn.danger,body.demo-lock .btn.warn{cursor:not-allowed;opacity:.5}
+body.demo-lock .btn.danger::after{content:" 🔒";font-size:11px}
+body.demo-lock .btn.warn::after{content:" 🔒";font-size:11px}
+body.demo-lock .demolocked{opacity:.5;pointer-events:none}
+
+/* ---- 大模型 API 配置面板 ---- */
+.apistat{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.apistat .s{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:7px;
+font-size:11.5px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09)}
+.apistat .s.on{background:rgba(34,197,94,.13);border-color:rgba(34,197,94,.4);color:#86efac}
+.apistat .s.off{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.4);color:#fca5a5}
+.apistat .s.warn{background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.4);color:#fcd34d}
+.switch{display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;
+margin-top:12px;padding:8px 12px;border-radius:9px;background:rgba(245,158,11,.09);
+border:1px solid rgba(245,158,11,.35)}
+.switch.off{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.3)}
+.switch input{display:none}
+.switch .knob{width:38px;height:21px;border-radius:999px;background:#ef4444;position:relative;
+transition:.25s;flex-shrink:0}
+.switch.off .knob{background:#22c55e}
+.switch .knob::after{content:"";position:absolute;left:3px;top:2.5px;width:16px;height:16px;
+border-radius:50%;background:#fff;transition:.25s}
+.switch.on .knob::after{left:19px}
+.switch .tx{font-size:12.5px;font-weight:600}
+.switch .tx small{display:block;font-weight:400;font-size:11px;color:var(--tx3)}
+@media(max-width:1100px){
+  .gkmetrics{grid-template-columns:repeat(3,1fr)}
+  .gkcore{grid-template-columns:1fr}
+  .gkagents{height:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+    gap:9px;margin-top:10px}
+  .gkag{position:static;width:auto;transform:none}
+  .gkhubnode{position:static;transform:none;margin:0 auto 12px}
+  .gkradial svg.wires{display:none}
+}
 </style>
 </head>
 <body>
@@ -762,8 +963,7 @@ border-bottom:1px solid var(--line);font-size:12.5px}
     <div class="hs" title="当前行业方案，切换后整套 AI 员工跟着变">
       <span class="v" style="font-size:13px">%%INDUSTRY%%</span>
       <span class="l">当前行业 · %%IND_COUNT%% 岗位</span>
-    </div>
-    <div class="hs" title="整个 AI 员工体系的累计经营数据，不随行业切换而变">
+    </div>    <div class="hs" title="整个 AI 员工体系的累计经营数据，不随行业切换而变">
       <span class="v">%%T_EMPLOYEES%%</span><span class="l">在册员工</span>
     </div>
     <div class="hs" title="整个 AI 员工体系的累计调用次数（全部行业）">
@@ -779,11 +979,19 @@ border-bottom:1px solid var(--line);font-size:12.5px}
       <span class="v">%%T_OUTCHARS%%</span><span class="l">累计产出字</span>
     </div>
   </div>
+  <!-- 角色徽标：登录后由 /api/session 决定显示哪一个 -->
+  <div class="rolebadge demo" id="role_demo_badge">
+    <span class="bl"></span>🎬 演示模式 · 不消耗 Token
+  </div>
+  <div class="rolebadge owner" id="role_owner_badge">
+    <span class="bl"></span>👑 管理员 · 全功能
+  </div>
 </header>
 
 <nav class="tabs">
   <button class="tab on" data-p="p0">📊 概览</button>
   <button class="tab" data-p="p9">🖥 作战看板</button>
+  <button class="tab" data-p="p15">🛰️ 智能体矩阵</button>
   <button class="tab" data-p="p1">🧑‍💼 状态墙</button>
   <button class="tab" data-p="p2">📮 派活台</button>
   <button class="tab" data-p="p3">⚡ 一键成稿</button>
@@ -1404,6 +1612,75 @@ border-bottom:1px solid var(--line);font-size:12.5px}
   </div>
 </section>
 
+<!-- ============================================================
+     🛰️ 智能体矩阵（GROKBOT MULTI-AGENT CONTROL）
+     参考视频 AfgDyf9m6N 的面板结构
+     ============================================================ -->
+<section class="page" id="p15">
+  <div class="gk">
+
+    <!-- 顶部 6 条指标 -->
+    <div class="gkmetrics" id="gk_metrics"></div>
+
+    <!-- 中枢：左金额卡 + 右辐射矩阵 -->
+    <div class="gkcore">
+      <div class="gkhub" id="gk_hub">
+        <div class="en">GRID CORE</div>
+        <div class="lbl">OPC 中枢 · 今日消耗</div>
+        <div class="big"><i>¥</i><span id="gk_cost_today">0.0000</span></div>
+        <div class="sub" id="gk_cost_sub">累计 ¥0.0000 · 累计 0 次调用</div>
+        <div class="bar"><i id="gk_budget_bar" style="width:0%"></i></div>
+        <div class="sub" id="gk_budget_sub">今日 Token 预算占用 0%</div>
+        <div class="kv">
+          <div><span>今日调用</span><b id="gk_calls_today">0</b></div>
+          <div><span>今日 Token</span><b id="gk_tokens_today">0</b></div>
+          <div><span>在册 Agent</span><b id="gk_agents_n">0</b></div>
+          <div><span>今日活跃</span><b id="gk_active_n">0</b></div>
+        </div>
+      </div>
+
+      <div class="gkradial">
+        <div class="rtitle">◈ RADIAL AGENT MATRIX <b>· 六个阶段围绕中枢运转</b></div>
+        <svg class="wires" id="gk_wires" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
+        <div class="gkagents" id="gk_agents"></div>
+        <div class="gkhubnode">
+          <div class="ic">🛰️</div>
+          <div class="t">OPC 中枢</div>
+          <div class="s" id="gk_hub_pct">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 金额曲线 -->
+    <div class="gkcurve" style="margin-bottom:14px">
+      <div class="ct">◈ COST CURVE · 花费变化曲线</div>
+      <svg id="gk_curve" viewBox="0 0 600 100" preserveAspectRatio="none"></svg>
+      <div class="lg" id="gk_curve_lg">还没有花费记录</div>
+    </div>
+
+    <!-- Agent 明细卡 -->
+    <div class="panel" style="margin-bottom:14px">
+      <h3>🤖 Agent 明细 <span class="tag" id="gk_count">0</span></h3>
+      <div class="desc">
+        每个 Agent 的完成度 %、进度条、当前任务、消耗 Token 与花费 —— 全部来自真实调用台账，不虚构。
+      </div>
+      <div class="gkgrid" id="gk_grid" style="margin-top:12px"></div>
+    </div>
+
+    <!-- 底部 CONTINUOUS FEED -->
+    <div class="gkfeed">
+      <div class="ft"><span class="dot"></span>CONTINUOUS FEED · 实时执行日志流</div>
+      <div id="gk_feed"><div style="color:var(--tx3);font-size:11.5px">等待事件…</div></div>
+    </div>
+
+    <div class="btnrow" style="margin-top:12px">
+      <button class="btn ghost" onclick="loadGrok()">刷新矩阵</button>
+      <span class="tag" id="gk_ts">—</span>
+    </div>
+
+  </div>
+</section>
+
 <section class="page" id="p1">
   <div class="panel" style="margin-bottom:14px">
     <h3>🧑‍💼 AI 员工状态墙</h3>
@@ -1606,6 +1883,70 @@ border-bottom:1px solid var(--line);font-size:12.5px}
       </div>
     </div>
   </div>
+
+  <!-- ============ 大模型 API 配置 ============ -->
+  <div class="panel" style="margin-top:14px" id="llm_panel">
+    <h3>🤖 大模型 API</h3>
+    <div class="desc">
+      填上 DeepSeek 的 Key 就能真正跑起来。<b>Key 只写进服务器本地文件（config.local.json），回读时只显示掩码，永远不会明文传回浏览器。</b>
+    </div>
+
+    <div class="apistat" id="llm_stat"></div>
+
+    <label>API Key</label>
+    <input id="llm_key" type="password" placeholder="sk-..." autocomplete="off">
+    <div class="note" style="margin-top:6px;font-size:11.5px" id="llm_key_hint">
+      留空 = 不修改已保存的 Key。掩码（sk-xx…xxxx）是回显值，保存时会被自动忽略。
+    </div>
+
+    <div class="g2" style="margin-top:12px">
+      <div>
+        <label>Base URL</label>
+        <input id="llm_base" placeholder="https://api.deepseek.com/v1">
+      </div>
+      <div>
+        <label>模型</label>
+        <input id="llm_model" placeholder="deepseek-flash">
+      </div>
+    </div>
+
+    <div class="g2" style="margin-top:0">
+      <div>
+        <label>深度思考模型</label>
+        <input id="llm_reasoner" placeholder="deepseek-v4-pro">
+      </div>
+      <div>
+        <label>每日 Token 预算</label>
+        <input id="llm_budget" type="number" min="0" step="10000" placeholder="200000">
+      </div>
+    </div>
+
+    <!-- 演示模式开关：这是保护真 Key 的核心闸门 -->
+    <label class="switch off" id="llm_demo_sw">
+      <input type="checkbox" id="llm_demo" onchange="toggleDemoSw(this)">
+      <span class="knob"></span>
+      <span class="tx">🎬 演示模式（不消耗 Token）
+        <small id="llm_demo_hint">关闭时所有 AI 员工调用真实 API，会真实扣费</small>
+      </span>
+    </label>
+
+    <div class="btnrow">
+      <button class="btn" onclick="saveLlm()">保存 API 配置</button>
+      <button class="btn ghost" onclick="testLlm()">连接测试</button>
+      <button class="btn ghost" onclick="loadLlm()">重新读取</button>
+      <button class="btn ghost" id="llm_clear_btn" onclick="clearLlmKey()">清除 Key</button>
+    </div>
+    <div class="msg" id="llm_msg"></div>
+
+    <div class="note warn" style="margin-top:14px">
+      <b>⚠️ 演示模式下会发生什么</b>：所有 AI 员工仍然会「干活」——走完整个流程、生成完整格式的产出文件、
+      台账照常记录 —— 但<b>不会发出任何 API 请求</b>，Token 消耗恒为 0，费用恒为 ¥0。
+      客户看到的是一套完整可用的系统，点多少次都不会扣你的钱。
+      <br>
+      <b>双重保险</b>：① 路由层拦掉演示账号的危险操作；② 模型层总闸兜底 ——
+      即使有人绕过页面直接调接口，也发不出请求。
+    </div>
+  </div>
 </section>
 
 </div>
@@ -1796,7 +2137,7 @@ function go(p){
   if(p==='p4')loadFiles();
   if(p==='p5')refreshGallery();
   if(p==='p6')loadProfile();
-  if(p==='p8')loadSysInfo();
+  if(p==='p8'){loadSysInfo();loadLlm();}
   if(p==='p2')loadOrders();
   if(p==='p9')loadIndustries();
   if(p==='p10')loadMarket();
@@ -1804,6 +2145,7 @@ function go(p){
   if(p==='p12')loadShop();
   if(p==='p13')loadMats();
   if(p==='p14'){ if(!WX_DATA)wxReload(false); }
+  if(p==='p15')grokAutoRefresh(true); else grokAutoRefresh(false);
   if(p==='p0'||p==='p8')renderLedgerDays();
   window.scrollTo(0,0);
 }
@@ -3113,6 +3455,378 @@ async function saveWechat(){
   msg('wx_msg',r.ok?'已保存':'保存失败',r.ok?'ok':'err');
 }
 
+/* ================================================================
+   角色识别（演示账号 / 管理员）
+   ------------------------------------------------------------
+   为什么要这个：
+     网站给客户演示时，DeepSeek 的 Key 是我自己的。
+     演示账号只能看，不能点「一键成稿」把 token 烧光。
+
+   流程：
+     1. 页面一进来就问 /api/session：我现在是什么角色？
+     2. demo → 显示「🎬 演示模式」徽标 + 给 body 加 demo-lock 类
+             （CSS 里所有 .btn.danger/.btn.warn 会自动变灰加锁）
+     3. owner → 显示「👑 管理员」徽标
+
+   注意：这只是**界面层**的友好提示，真正的防线在后端两道闸
+   （路由白名单 + 模型层总闸）。前端被绕过也不会烧钱。
+   ================================================================ */
+let MYROLE = null;   // 'owner' | 'demo' | null
+
+async function loadSession(){
+  try{
+    const r = await get('/api/session');
+    if(r && r.ok){
+      MYROLE = r.role || null;
+      applyRole();
+    }
+  }catch(e){}
+}
+
+function applyRole(){
+  const demo = $('role_demo_badge'), owner = $('role_owner_badge');
+  if(demo) demo.classList.toggle('show', MYROLE==='demo');
+  if(owner) owner.classList.toggle('on', false);   // owner 用 .show
+  if(owner) owner.classList.toggle('show', MYROLE==='owner');
+
+  if(MYROLE==='demo'){
+    document.body.classList.add('demo-lock');
+    // 系统管理页的 API 配置面板对演示账号隐藏（本来后端也会 403 挡住，
+    // 这里先藏起来，避免客户点了报错以为坏了）
+    const p = $('llm_panel');
+    if(p) p.style.display='none';
+  }else{
+    document.body.classList.remove('demo-lock');
+  }
+  // 演示账号的顶部累计花费也提示一句
+  const rm = $('run_mode');
+  if(rm && MYROLE==='demo') rm.textContent = '演示模式';
+}
+
+/* ================================================================
+   🤖 大模型 API 配置面板
+   ================================================================ */
+async function loadLlm(){
+  const r = await get('/api/sys/llm');
+  if(!r || !r.ok){ msg('llm_msg','读取失败：'+(r&&r.error||'未知错误'),'err'); return; }
+
+  // Key 只回显掩码，且 input 里不填（避免误保存掩码）
+  $('llm_key').value = '';
+  $('llm_key').placeholder = r.has_key ? ('已配置（'+r.key_masked+'）· 留空=不改')
+                                        : 'sk-...（还没配）';
+  $('llm_base').value    = r.base_url || '';
+  $('llm_model').value   = r.model || '';
+  $('llm_reasoner').value= r.reasoner_model || '';
+  $('llm_budget').value  = r.daily_token_budget || '';
+
+  // 演示模式开关：环境变量优先，页面上要如实告诉用户
+  const envOn = r.env_demo_mode;
+  const sw = $('llm_demo'), swBox = $('llm_demo_sw');
+  sw.checked = envOn ? true : !!r.demo_mode;
+  swBox.classList.toggle('on', sw.checked);
+  swBox.classList.toggle('off', !sw.checked);
+  $('llm_demo_hint').textContent = envOn
+    ? '环境变量 STAFF_DEMO_MODE=1 已锁定开启（服务器部署时定死，优先级最高）'
+    : (sw.checked ? '已开启：AI 员工照常干活，但不会发出任何 API 请求' : '关闭时所有 AI 员工调用真实 API，会真实扣费');
+
+  // 状态徽标
+  const st = [];
+  st.push(r.has_key
+    ? '<span class="s on">🔑 Key 已配置 '+esc(r.key_masked)+'</span>'
+    : '<span class="s off">🔑 未配置 Key</span>');
+  st.push(r.key_is_placeholder
+    ? '<span class="s warn">⚠️ 当前是占位符，调用会失败</span>' : '');
+  st.push(r.demo_mode || envOn
+    ? '<span class="s warn">🎬 演示模式开启 · 不消耗 Token</span>'
+    : '<span class="s on">💰 真实调用模式 · 会扣费</span>');
+  if(r.simulate) st.push('<span class="s warn">🧪 simulate 已开（开发态）</span>');
+  if(r.env_key_set) st.push('<span class="s warn">🔒 环境变量 DEEPSEEK_API_KEY 已设置，优先级高于本页面</span>');
+  $('llm_stat').innerHTML = st.join('');
+
+  // 演示账号根本不该看到这个面板
+  if(MYROLE==='demo') $('llm_panel').style.display='none';
+}
+
+function toggleDemoSw(cb){
+  const box = $('llm_demo_sw');
+  box.classList.toggle('on', cb.checked);
+  box.classList.toggle('off', !cb.checked);
+  $('llm_demo_hint').textContent = cb.checked
+    ? '已开启：AI 员工照常干活，但不会发出任何 API 请求'
+    : '关闭时所有 AI 员工调用真实 API，会真实扣费';
+}
+
+async function saveLlm(){
+  const btn = $('llm_msg');
+  const key = $('llm_key').value.trim();
+  const body = {
+    base_url: $('llm_base').value.trim(),
+    model: $('llm_model').value.trim(),
+    reasoner_model: $('llm_reasoner').value.trim(),
+    daily_token_budget: parseInt($('llm_budget').value||'0',10) || undefined,
+    demo_mode: $('llm_demo').checked,
+  };
+  if(key) body.api_key = key;   // 留空就不传，后端保持原值
+  msg('llm_msg','保存中…','wait');
+  const r = await post('/api/sys/llm', body);
+  if(r.ok){
+    let t = '已保存。';
+    if(r.note) t += ' ' + r.note;
+    msg('llm_msg', t, r.note?'wait':'ok');
+    loadLlm();
+  }else{
+    msg('llm_msg','保存失败：'+(r.error||'未知错误'),'err');
+  }
+}
+
+async function clearLlmKey(){
+  if(!confirm('确定要清除已保存的 API Key？\n\n清除后所有 AI 员工将无法调用真实模型（除非开演示模式）。\n这一步不可撤销 —— 明文 Key 删掉后找不回来。'))return;
+  const r = await post('/api/sys/llm', {clear_key:true, confirm:'1'});
+  msg('llm_msg', r.ok ? 'Key 已清除' : '清除失败：'+(r.error||''), r.ok?'ok':'err');
+  if(r.ok) loadLlm();
+}
+
+async function testLlm(){
+  msg('llm_msg','测试中…','wait');
+  const r = await get('/api/sys/llm');
+  if(!r || !r.ok){ msg('llm_msg','读取失败','err'); return; }
+  if(r.demo_mode || r.env_demo_mode){
+    msg('llm_msg','当前是演示模式：不会真的连接 API，Token 消耗恒为 0 ✅（这正是演示模式的意义）','wait');
+    return;
+  }
+  if(!r.has_key){
+    msg('llm_msg','还没配置 Key，先填上再测','err');
+    return;
+  }
+  // 真测：调 health_check（不消耗生成 token，只发一个最轻的请求）
+  const h = await get('/api/llm/health');
+  if(h && h.ok){
+    msg('llm_msg','连接成功：'+(h.message||h.detail||'API 可用'),'ok');
+  }else{
+    msg('llm_msg','连接失败：'+(h&&(h.error||h.message)||'未知错误'),'err');
+  }
+}
+
+/* ================================================================
+   🛰️ GROKBOT 多智能体矩阵
+   ------------------------------------------------------------
+   参考视频 AfgDyf9m6N 的 GROKBOT MULTI-AGENT CONTROL 面板：
+     顶部 6 指标 → 中央金额卡 → 辐射式 Agent 矩阵 → 曲线 → 事件流
+   ================================================================ */
+let GROK = null;
+let GROK_TIMER = null;
+
+async function loadGrok(){
+  const r = await get('/api/agents/matrix');
+  if(!r || !r.ok){ $('gk_feed').innerHTML='<div style="color:#fca5a5">读取失败</div>'; return; }
+  GROK = r;
+  renderGrokMetrics(r);
+  renderGrokHub(r);
+  renderGrokRadial(r);
+  renderGrokCurve(r);
+  renderGrokGrid(r);
+  $('gk_ts').textContent = '更新于 '+r.ts;
+  loadGrokFeed();
+}
+
+/* ---- 顶部 6 条指标 ---- */
+function renderGrokMetrics(d){
+  $('gk_metrics').innerHTML = (d.metrics||[]).map(m=>{
+    const v = Number(m.value||0);
+    const cls = v>=70?'good':(v>=30?'warn':'bad');
+    return '<div class="gkm '+cls+'">'
+      + '<div class="en">'+esc(m.en)+'</div>'
+      + '<div class="cn">'+esc(m.cn)+'</div>'
+      + '<div class="v">'+v.toFixed(1)+'<small>%</small></div>'
+      + '<div class="hint">'+esc(m.hint||'')+'</div>'
+      + sparkSvg(m.wave)
+      + '</div>';
+  }).join('');
+}
+
+/* 迷你波形图（把 wave 数组画成折线） */
+function sparkSvg(wave){
+  const w = wave||[];
+  if(!w.length) return '';
+  const hi = Math.max.apply(null,w)||1;
+  const step = 100/(w.length-1||1);
+  const pts = w.map((v,i)=>(i*step).toFixed(1)+','+(28-(v/hi)*24).toFixed(1)).join(' ');
+  const area = '0,30 '+pts+' 100,30';
+  return '<svg class="wv" viewBox="0 0 100 30" preserveAspectRatio="none">'
+    + '<polygon points="'+area+'" fill="rgba(34,211,238,.14)"/>'
+    + '<polyline points="'+pts+'" fill="none" stroke="#22d3ee" stroke-width="1.4"'
+    + ' stroke-linejoin="round" stroke-linecap="round"/></svg>';
+}
+
+/* ---- 中枢金额卡 ---- */
+function renderGrokHub(d){
+  const h = d.hub||{};
+  $('gk_cost_today').textContent = Number(h.cost_today||0).toFixed(4);
+  $('gk_cost_sub').textContent = '累计 ¥'+Number(h.cost_total||0).toFixed(4)
+      +' · 累计 '+(h.calls_total||0)+' 次调用';
+  $('gk_budget_bar').style.width = Math.min(100, Number(h.budget_pct||0))+'%';
+  $('gk_budget_sub').textContent = '今日 Token 预算占用 '+Number(h.budget_pct||0).toFixed(1)
+      +'% （'+Number(h.tokens_today||0).toLocaleString()+' / '+Number(h.budget||0).toLocaleString()+'）';
+  $('gk_calls_today').textContent = h.calls_today||0;
+  $('gk_tokens_today').textContent = Number(h.tokens_today||0).toLocaleString();
+  $('gk_agents_n').textContent = h.agents||0;
+  $('gk_active_n').textContent = h.active||0;
+
+  // 中枢整体完成度 = 六个阶段的平均
+  const rad = d.radial||[];
+  const avg = rad.length ? rad.reduce((s,r)=>s+Number(r.pct||0),0)/rad.length : 0;
+  $('gk_hub_pct').textContent = avg.toFixed(0)+'%';
+}
+
+/* ---- 辐射式 Agent 矩阵 ---- */
+function renderGrokRadial(d){
+  const rad = d.radial||[];
+  const box = $('gk_agents');
+  // 先把节点画出来（绝对定位留到下一段统一算坐标）
+  box.innerHTML = rad.map(r=>{
+    const pct = Number(r.pct||0);
+    const cls = pct>=80?'p100':(pct>=50?'p75':(pct>=25?'p50':(pct>0?'p25':'p0')));
+    const bcls = pct>=80?'b100':(pct>=50?'b75':(pct>=25?'b50':(pct>0?'b25':'b0')));
+    const mem = (r.members||[]).map(m=>m.emoji+' '+esc(m.name)).join(' · ') || '暂无岗位';
+    return '<div class="gkag" data-en="'+esc(r.en)+'"'
+      + ' title="'+esc(r.en+' '+r.cn)+' · '+esc(mem)+'">'
+      + '<div class="ic">'+radialIcon(r.en)+'</div>'
+      + '<div class="nm">'+esc(r.cn)+'</div>'
+      + '<div class="cd">'+esc(r.en)+'</div>'
+      + '<div class="pc '+cls+'">'+pct.toFixed(0)+'%</div>'
+      + '<div class="pb"><i class="'+bcls+'" style="width:'+pct+'%"></i></div>'
+      + '<div class="mv">¥'+Number(r.cost||0).toFixed(4)+'</div>'
+      + '<div class="tk">'+esc(mem)+'</div>'
+      + '</div>';
+  }).join('');
+
+  // ---- 环形布局：按容器实际尺寸算坐标 ----
+  //
+  // 为什么不用写死的百分比：
+  //   容器宽高比会随窗口变，写死百分比在宽屏上节点会挤在一起、
+  //   窄屏上又会飘到边缘外面被裁掉（第一版就是这样，顶部「扫描」被切了）。
+  //   所以改成按当前实际像素算一个正六边形，半径由容器短边决定。
+  requestAnimationFrame(()=>{
+    const W = box.clientWidth || 800;
+    const H = box.clientHeight || 452;
+    const nodes = Array.from(box.querySelectorAll('.gkag'));
+    if(!nodes.length) return;
+    const cx = W/2, cy = H/2;
+    // 椭圆而不是正圆 —— 矩阵区是宽屏扁矩形，
+    // 用正圆会因为垂直空间不够而缩得很小，右侧留一大片空白。
+    // 所以横向和纵向半径分开算：
+    //   ry = 垂直能用的最大半径（上下各留出半个节点高）
+    //   rx = 横向能用的最大半径，但不超过 ry 的 1.9 倍（太扁就不好看）
+    const nw = nodes[0].offsetWidth || 150;
+    const nh = nodes[0].offsetHeight || 110;
+    const ry = Math.max(80, (H/2 - (nh/2 + 16)));
+    const rx = Math.max(120, Math.min((W/2 - (nw/2 + 20)), ry*1.9));
+    const svg = $('gk_wires');
+    let lines = '';
+    nodes.forEach((el,i)=>{
+      // 从正上方开始，每 60 度一个 —— 经典的六边形辐射布局
+      const ang = (-90 + i*60) * Math.PI/180;
+      const x = cx + rx*Math.cos(ang);
+      const y = cy + ry*Math.sin(ang);
+      el.style.left = x+'px';
+      el.style.top = y+'px';
+      el.style.transform = 'translate(-50%,-50%)';
+      const hot = Number(rad[i].pct||0)>=50 ? 'hot' : '';
+      lines += '<line class="'+hot+'" x1="'+cx.toFixed(1)+'" y1="'+cy.toFixed(1)
+             + '" x2="'+x.toFixed(1)+'" y2="'+y.toFixed(1)+'"/>';
+    });
+    if(svg){
+      // SVG 铺满容器，viewBox 与实际像素 1:1 对应。
+      // 用 width/height 属性把 SVG 尺寸锁成容器尺寸，
+      // 这样 viewBox=0 0 W H 就是像素映射，线条不会变形。
+      svg.setAttribute('viewBox','0 0 '+W+' '+H);
+      svg.setAttribute('preserveAspectRatio','none');
+      svg.style.width = W+'px';
+      svg.style.height = H+'px';
+      svg.innerHTML = lines;
+    }
+  });
+}
+
+function radialIcon(en){
+  return {'SCAN':'🔭','ANALYZE':'💡','CREATE':'✍️','EXECUTE':'🚀',
+          'VERIFY':'🔍','RECORD':'🗂️'}[en] || '🤖';
+}
+
+/* ---- 花费曲线 ---- */
+function renderGrokCurve(d){
+  const c = d.curve||[];
+  const svg = $('gk_curve');
+  if(!c.length){ svg.innerHTML=''; $('gk_curve_lg').textContent='还没有花费记录'; return; }
+  const costs = c.map(x=>Number(x.cost||0));
+  const hi = Math.max.apply(null,costs)||1;
+  const step = c.length>1 ? 560/(c.length-1) : 560;
+  const pts = costs.map((v,i)=>(20+i*step).toFixed(1)+','+(92-(v/hi)*74).toFixed(1)).join(' ');
+  const area = '20,92 '+pts+' '+(20+(c.length-1)*step).toFixed(1)+',92';
+  // 填充渐变
+  const defs = '<defs><linearGradient id="gkgrad" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0%" stop-color="#22d3ee" stop-opacity=".42"/>'
+    + '<stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/></linearGradient></defs>';
+  svg.innerHTML = defs
+    + '<polygon points="'+area+'" fill="url(#gkgrad)"/>'
+    + '<polyline points="'+pts+'" fill="none" stroke="#22d3ee" stroke-width="2"'
+    + ' stroke-linejoin="round"/>'
+    + c.map((x,i)=>'<circle cx="'+(20+i*step).toFixed(1)+'" cy="'+(92-(Number(x.cost||0)/hi)*74).toFixed(1)
+      + '" r="2.6" fill="#67e8f9"/>').join('');
+  $('gk_curve_lg').textContent = c.map(x=>x.day.slice(5)+' ¥'+Number(x.cost||0).toFixed(4)).join('   ·   ');
+}
+
+/* ---- Agent 明细卡 ---- */
+function renderGrokGrid(d){
+  const list = (d.agents||[]).slice().sort((a,b)=>Number(b.pct||0)-Number(a.pct||0));
+  $('gk_count').textContent = list.length;
+  $('gk_grid').innerHTML = list.map(a=>{
+    const pct = Number(a.pct||0);
+    const cls = pct>=80?'p100':(pct>=50?'p75':(pct>=25?'p50':(pct>0?'p25':'p0')));
+    const bcls = pct>=80?'b100':(pct>=50?'b75':(pct>=25?'b50':(pct>0?'b25':'b0')));
+    return '<div class="gkcard">'
+      + '<div class="hd"><span class="ic">'+a.emoji+'</span>'
+      + '<span class="nm">'+esc(a.name)+'</span>'
+      + '<span class="pc '+cls+'">'+pct.toFixed(0)+'%</span></div>'
+      + '<div class="pb"><i class="'+bcls+'" style="width:'+pct+'%"></i></div>'
+      + '<div class="rw"><span>Token</span><b>'+Number(a.tokens||0).toLocaleString()+'</b></div>'
+      + '<div class="rw"><span>花费</span><b>¥'+Number(a.cost_yuan||0).toFixed(4)+'</b></div>'
+      + '<div class="rw"><span>调用 / 产出</span><b>'+(a.calls||0)+' / '+Number(a.output_chars||0).toLocaleString()+' 字</b></div>'
+      + '<div class="rw"><span>状态</span><b>'+esc(a.state||'')+(a.errors?' ⚠'+a.errors:'')+'</b></div>'
+      + '<div class="task">▶ '+esc(a.task||'待命')+'</div>'
+      + '</div>';
+  }).join('');
+}
+
+/* ---- 底部 CONTINUOUS FEED ---- */
+async function loadGrokFeed(){
+  const r = await get('/api/live/recent');
+  if(!r || !r.ok) return;
+  const evs = (r.events||[]).slice(-40).reverse();
+  if(!evs.length){
+    $('gk_feed').innerHTML='<div style="color:var(--tx3);font-size:11.5px">还没有事件，去派个活就有日志了</div>';
+    return;
+  }
+  $('gk_feed').innerHTML = evs.map(e=>{
+    const t = (e.ts||'').slice(11,19);
+    const ty = e.type||'info';
+    const cls = ty==='error'||ty==='err'?'err':(ty==='warn'?'warn':(ty==='ai_call'?'ok':''));
+    const msg = e.msg || e.message || '';
+    return '<div class="ln '+cls+'"><span class="tm">'+esc(t)+'</span>'
+      + '<span class="ty">'+esc(ty.toUpperCase())+'</span>'
+      + '<span class="ms">'+esc(msg)+'</span></div>';
+  }).join('');
+}
+
+/* 大盘自动刷新（切到该页时开，离开时关，别一直占资源） */
+function grokAutoRefresh(on){
+  if(GROK_TIMER){ clearInterval(GROK_TIMER); GROK_TIMER=null; }
+  if(on){
+    loadGrok();
+    GROK_TIMER = setInterval(()=>{ loadGrok(); }, 20000);
+  }
+}
+
 async function init(){
   const th=await get('/api/media/themes');
   const opts=th.themes.map(t=>'<option value="'+t.key+'">'+esc(t.name)+'</option>').join('');
@@ -3121,6 +3835,7 @@ async function init(){
   FILES=a.files||[];
   $('o_recent').innerHTML=FILES.slice(0,8).map(f=>'<div style="font-size:12.5px;padding:6px 0;border-bottom:1px solid var(--line)">'+
     '<b>'+esc(f.name)+'</b> <span style="color:var(--tx3)">'+esc(f.folder)+' · '+f.chars+'字</span></div>').join('')||'<div class="empty">还没有产出</div>';
+  await loadSession();      // 先认角色，再决定显示什么
   goFromHash();
   initLive();
   initMatrix();
